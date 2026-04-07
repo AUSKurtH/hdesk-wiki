@@ -12,11 +12,16 @@
     "@dnd-kit/core": "^6.1.0",
     "@dnd-kit/sortable": "^8.0.0",
     "@dnd-kit/utilities": "^3.2.2",
+    "@tiptap/extension-placeholder": "^3.22.2",
+    "@tiptap/react": "^3.22.2",
+    "@tiptap/starter-kit": "^3.22.2",
     "@uiw/react-md-editor": "^4.0.4",
     "lucide-react": "^0.363.0",
+    "marked": "^18.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.22.3",
+    "turndown": "^7.2.4",
     "zustand": "^4.5.2"
   },
   "devDependencies": {

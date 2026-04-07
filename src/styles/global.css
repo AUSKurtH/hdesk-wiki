@@ -1255,8 +1255,19 @@ input, textarea, select {
 
 .doc-editor-title-input {
   flex: 1;
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 700;
+  border: none;
+  background: transparent;
+  color: var(--color-text);
+  padding: 2px 0;
+  outline: none;
+  border-bottom: 2px solid transparent;
+  transition: border-color var(--transition-fast);
+}
+
+.doc-editor-title-input:focus {
+  border-bottom-color: var(--color-primary);
 }
 
 .doc-editor-actions {
@@ -1290,6 +1301,285 @@ input, textarea, select {
 .doc-viewer th { background: var(--color-surface-alt); font-weight: 600; }
 .doc-viewer a { color: var(--color-primary); }
 .doc-viewer hr { border: none; border-top: 1px solid var(--color-border); margin: 1.5rem 0; }
+
+/* ══════════════════════════════════════════════════════════
+   WIKI EDITOR (TipTap)
+══════════════════════════════════════════════════════════ */
+.wiki-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Toolbar */
+.wiki-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 8px;
+  border: 1px solid var(--color-border);
+  border-bottom: none;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  background: var(--color-surface-hover);
+  flex-wrap: wrap;
+}
+
+.wiki-toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+}
+
+.wiki-toolbar-divider {
+  width: 1px;
+  height: 18px;
+  background: var(--color-border);
+  margin: 0 4px;
+}
+
+.wiki-toolbar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-subtle);
+  border: none;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.wiki-toolbar-btn:hover {
+  background: var(--color-border);
+  color: var(--color-text);
+}
+
+.wiki-toolbar-btn--active {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+/* Bubble menu */
+.wiki-bubble-menu {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 6px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+}
+
+.wiki-bubble-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-subtle);
+  border: none;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.wiki-bubble-btn:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-text);
+}
+
+.wiki-bubble-btn--active {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.wiki-bubble-divider {
+  width: 1px;
+  height: 16px;
+  background: var(--color-border);
+  margin: 0 2px;
+}
+
+/* Editor content area */
+.wiki-editor-content {
+  flex: 1;
+}
+
+.wiki-editor .ProseMirror {
+  outline: none;
+  padding: 16px 18px;
+  min-height: 200px;
+  border: 1px solid var(--color-border);
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 14px;
+  line-height: 1.75;
+  transition: border-color var(--transition-fast);
+  cursor: text;
+}
+
+.wiki-editor--readonly .ProseMirror {
+  border: none;
+  padding: 0;
+  background: transparent;
+  min-height: unset;
+  cursor: default;
+}
+
+.wiki-editor .ProseMirror:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.1);
+}
+
+.wiki-editor--readonly .ProseMirror:focus {
+  border-color: transparent;
+  box-shadow: none;
+}
+
+/* Placeholder */
+.wiki-editor .ProseMirror p.is-editor-empty:first-child::before,
+.wiki-editor .wiki-editor-empty .ProseMirror p:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: var(--color-text-subtle);
+  pointer-events: none;
+  height: 0;
+}
+
+/* Typography inside ProseMirror */
+.wiki-editor .ProseMirror h1 {
+  font-size: 1.7rem;
+  font-weight: 700;
+  margin: 0.2em 0 0.5em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+  line-height: 1.3;
+}
+
+.wiki-editor .ProseMirror h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 1.2em 0 0.4em;
+  color: var(--color-text);
+  line-height: 1.3;
+}
+
+.wiki-editor .ProseMirror h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 1em 0 0.3em;
+  color: var(--color-text);
+  line-height: 1.3;
+}
+
+.wiki-editor .ProseMirror p {
+  margin: 0 0 0.6em;
+}
+
+.wiki-editor .ProseMirror strong {
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.wiki-editor .ProseMirror em {
+  font-style: italic;
+}
+
+.wiki-editor .ProseMirror s {
+  text-decoration: line-through;
+  color: var(--color-text-muted);
+}
+
+.wiki-editor .ProseMirror code {
+  font-family: 'SFMono-Regular', 'Consolas', 'Liberation Mono', monospace;
+  font-size: 0.87em;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: var(--color-surface-hover);
+  color: var(--color-secondary);
+  border: 1px solid var(--color-border);
+}
+
+.wiki-editor .ProseMirror pre {
+  background: var(--color-surface-hover);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  overflow-x: auto;
+  margin: 0.8em 0;
+}
+
+.wiki-editor .ProseMirror pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.88em;
+  color: var(--color-text);
+}
+
+.wiki-editor .ProseMirror blockquote {
+  border-left: 3px solid var(--color-primary);
+  margin: 0.8em 0;
+  padding: 4px 0 4px 16px;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.wiki-editor .ProseMirror ul,
+.wiki-editor .ProseMirror ol {
+  padding-left: 24px;
+  margin: 0.4em 0 0.8em;
+}
+
+.wiki-editor .ProseMirror li {
+  margin-bottom: 3px;
+}
+
+.wiki-editor .ProseMirror li > p {
+  margin: 0;
+}
+
+.wiki-editor .ProseMirror hr {
+  border: none;
+  border-top: 2px solid var(--color-border);
+  margin: 1.2em 0;
+}
+
+.wiki-editor .ProseMirror table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.8em 0;
+  font-size: 13.5px;
+}
+
+.wiki-editor .ProseMirror th,
+.wiki-editor .ProseMirror td {
+  border: 1px solid var(--color-border);
+  padding: 6px 12px;
+  text-align: left;
+}
+
+.wiki-editor .ProseMirror th {
+  background: var(--color-surface-hover);
+  font-weight: 600;
+}
+
+.wiki-editor .ProseMirror a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Selection highlight */
+.wiki-editor .ProseMirror ::selection {
+  background: rgba(43, 108, 176, 0.2);
+}
 
 /* ══════════════════════════════════════════════════════════
    SETTINGS PAGE

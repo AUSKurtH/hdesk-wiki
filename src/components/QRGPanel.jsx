@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react'
 import * as LucideIcons from 'lucide-react'
-import MDEditor from '@uiw/react-md-editor'
+import WikiEditor from './WikiEditor.jsx'
 import useAppStore from '../store/useAppStore.js'
 
 export default function QRGPanel({ tool }) {
   const updateTool = useAppStore((s) => s.updateTool)
-  const theme = useAppStore((s) => s.theme)
-  const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState('')
+  const [hasChanges, setHasChanges] = useState(false)
 
   useEffect(() => {
-    setEditing(false)
-    setDraft('')
+    setDraft(tool?.qrg || '')
+    setHasChanges(false)
   }, [tool?.id])
 
   if (!tool) {
@@ -27,21 +26,15 @@ export default function QRGPanel({ tool }) {
   }
 
   const IconComponent = LucideIcons[tool.icon] || LucideIcons.Globe
-  const qrg = tool.qrg || ''
-
-  const handleEditStart = () => {
-    setDraft(qrg)
-    setEditing(true)
-  }
 
   const handleSave = () => {
     updateTool(tool.id, { qrg: draft })
-    setEditing(false)
+    setHasChanges(false)
   }
 
   const handleDiscard = () => {
-    setDraft('')
-    setEditing(false)
+    setDraft(tool.qrg || '')
+    setHasChanges(false)
   }
 
   return (
@@ -71,15 +64,10 @@ export default function QRGPanel({ tool }) {
         </a>
       </div>
 
-      {/* QRG label + edit controls */}
+      {/* QRG label + save controls */}
       <div className="qrg-section-header">
         <span className="qrg-section-label">Quick Reference Guide</span>
-        {!editing ? (
-          <button className="btn btn-ghost btn-sm" onClick={handleEditStart}>
-            <LucideIcons.Pencil size={13} />
-            Edit
-          </button>
-        ) : (
+        {hasChanges && (
           <div className="qrg-edit-actions">
             <button className="btn btn-secondary btn-sm" onClick={handleDiscard}>
               Discard
@@ -91,29 +79,14 @@ export default function QRGPanel({ tool }) {
         )}
       </div>
 
-      {/* Content */}
-      <div className="qrg-content" data-color-mode={theme}>
-        {editing ? (
-          <MDEditor
-            value={draft}
-            onChange={setDraft}
-            preview="edit"
-            hideToolbar={false}
-            height={420}
-          />
-        ) : qrg ? (
-          <div className="qrg-preview wmde-markdown-var">
-            <MDEditor.Markdown source={qrg} />
-          </div>
-        ) : (
-          <div className="qrg-no-content">
-            <p>No quick reference guide yet.</p>
-            <button className="btn btn-secondary btn-sm" onClick={handleEditStart}>
-              <LucideIcons.Plus size={13} />
-              Write one
-            </button>
-          </div>
-        )}
+      {/* Live editor */}
+      <div className="qrg-content">
+        <WikiEditor
+          key={tool.id}
+          value={draft}
+          onChange={(md) => { setDraft(md); setHasChanges(true) }}
+          placeholder="Write a quick reference guide for this tool…"
+        />
       </div>
     </div>
   )

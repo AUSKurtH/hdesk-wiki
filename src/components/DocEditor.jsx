@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import MDEditor from '@uiw/react-md-editor'
-import { Edit3, Eye, Save, X, Trash2 } from 'lucide-react'
+import { Save, X, Trash2 } from 'lucide-react'
+import WikiEditor from './WikiEditor.jsx'
 import useAppStore from '../store/useAppStore.js'
 import { useNavigate } from 'react-router-dom'
 
@@ -8,11 +8,9 @@ export default function DocEditor({ docId }) {
   const docs = useAppStore((s) => s.docs)
   const updateDoc = useAppStore((s) => s.updateDoc)
   const deleteDoc = useAppStore((s) => s.deleteDoc)
-  const theme = useAppStore((s) => s.theme)
   const navigate = useNavigate()
 
   const doc = docs[docId]
-  const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState('')
   const [titleDraft, setTitleDraft] = useState('')
   const [hasChanges, setHasChanges] = useState(false)
@@ -21,10 +19,9 @@ export default function DocEditor({ docId }) {
     if (doc) {
       setDraft(doc.content || '')
       setTitleDraft(doc.title || '')
-      setEditing(false)
       setHasChanges(false)
     }
-  }, [docId, doc])
+  }, [docId])
 
   if (!doc) {
     return (
@@ -44,14 +41,12 @@ export default function DocEditor({ docId }) {
 
   const handleSave = () => {
     updateDoc(docId, { content: draft, title: titleDraft })
-    setEditing(false)
     setHasChanges(false)
   }
 
   const handleDiscard = () => {
     setDraft(doc.content || '')
     setTitleDraft(doc.title || '')
-    setEditing(false)
     setHasChanges(false)
   }
 
@@ -62,38 +57,19 @@ export default function DocEditor({ docId }) {
     }
   }
 
-  const handleContentChange = (val) => {
-    setDraft(val || '')
-    setHasChanges(true)
-  }
-
-  const handleTitleChange = (e) => {
-    setTitleDraft(e.target.value)
-    setHasChanges(true)
-  }
-
   return (
-    <div className="doc-editor" data-color-mode={theme}>
+    <div className="doc-editor">
       <div className="doc-editor-header">
-        {editing ? (
-          <input
-            className="doc-editor-title-input input"
-            value={titleDraft}
-            onChange={handleTitleChange}
-            placeholder="Document title"
-          />
-        ) : (
-          <h1 className="doc-editor-title">{doc.title}</h1>
-        )}
-
+        <input
+          className="doc-editor-title-input"
+          value={titleDraft}
+          onChange={(e) => { setTitleDraft(e.target.value); setHasChanges(true) }}
+          placeholder="Document title"
+        />
         <div className="doc-editor-actions">
-          {editing ? (
+          {hasChanges && (
             <>
-              <button
-                className="btn btn-primary btn-sm"
-                onClick={handleSave}
-                disabled={!hasChanges}
-              >
+              <button className="btn btn-primary btn-sm" onClick={handleSave}>
                 <Save size={14} />
                 Save
               </button>
@@ -102,14 +78,6 @@ export default function DocEditor({ docId }) {
                 Discard
               </button>
             </>
-          ) : (
-            <button
-              className="btn btn-secondary btn-sm"
-              onClick={() => setEditing(true)}
-            >
-              <Edit3 size={14} />
-              Edit
-            </button>
           )}
           <button
             className="btn btn-ghost btn-sm"
@@ -123,22 +91,12 @@ export default function DocEditor({ docId }) {
       </div>
 
       <div className="doc-editor-body">
-        {editing ? (
-          <MDEditor
-            value={draft}
-            onChange={handleContentChange}
-            preview="edit"
-            height={600}
-            data-color-mode={theme}
-          />
-        ) : (
-          <div className="doc-viewer">
-            <MDEditor.Markdown
-              source={doc.content || '*This document is empty. Click Edit to add content.*'}
-              style={{ background: 'transparent', color: 'var(--color-text)' }}
-            />
-          </div>
-        )}
+        <WikiEditor
+          key={docId}
+          value={draft}
+          onChange={(md) => { setDraft(md); setHasChanges(true) }}
+          placeholder="Start writing your document…"
+        />
       </div>
     </div>
   )
