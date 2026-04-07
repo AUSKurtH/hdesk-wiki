@@ -917,6 +917,103 @@ input, textarea, select {
 }
 
 /* ══════════════════════════════════════════════════════════
+   UI SCALE CONTROLS
+══════════════════════════════════════════════════════════ */
+:root {
+  --ui-scale: 1;
+}
+
+/* Scale slider in header */
+.scale-slider-wrap {
+  display: flex;
+  align-items: center;
+  gap: calc(6px * var(--ui-scale));
+}
+
+.scale-slider-input {
+  width: 80px;
+  height: 4px;
+  border-radius: 2px;
+  appearance: none;
+  background: var(--color-border);
+  outline: none;
+  cursor: pointer;
+}
+
+.scale-slider-input::-webkit-slider-thumb {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.scale-slider-input::-webkit-slider-thumb:hover {
+  background: var(--color-primary-dark);
+}
+
+.scale-slider-input::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.scale-slider-input::-moz-range-thumb:hover {
+  background: var(--color-primary-dark);
+}
+
+.scale-slider-label {
+  font-size: 12px;
+  min-width: 35px;
+  text-align: right;
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+/* Tool grid scaling - prioritize gaps first, then sizes */
+.tool-grid-container {
+  gap: calc(28px * max(0.6, var(--ui-scale)));
+}
+
+.tool-category-section {
+  gap: calc(12px * max(0.6, var(--ui-scale)));
+}
+
+.tool-cards-grid {
+  gap: calc(12px * max(0.6, var(--ui-scale)));
+  grid-template-columns: repeat(auto-fill, minmax(calc(180px * var(--ui-scale)), 1fr));
+}
+
+.tool-card {
+  min-height: calc(110px * var(--ui-scale));
+  padding: calc(12px * var(--ui-scale));
+}
+
+.tool-card-icon {
+  width: calc(44px * var(--ui-scale));
+  height: calc(44px * var(--ui-scale));
+}
+
+.tool-card-name {
+  font-size: calc(13px * var(--ui-scale));
+}
+
+.tool-card-desc {
+  font-size: calc(11px * var(--ui-scale));
+}
+
+.tool-add-card {
+  min-height: calc(110px * var(--ui-scale));
+  padding: calc(12px * var(--ui-scale));
+}
+
+/* ══════════════════════════════════════════════════════════
    QRG PANEL
 ══════════════════════════════════════════════════════════ */
 .qrg-panel {

@@ -254,6 +254,9 @@ A quick reference for the most frequently encountered helpdesk issues.
 const useAppStore = create(
   persist(
     (set, get) => ({
+      // UI Scale
+      uiScale: 1,
+      setUIScale: (scale) => set({ uiScale: Math.max(0.5, Math.min(1.5, scale)) }),
       // Theme
       theme: 'light',
       lastLightTheme: 'light',
@@ -424,6 +427,7 @@ const useAppStore = create(
         }
       },
       resetToDefaults: () => set({
+        uiScale: 1,
         theme: 'light',
         lastLightTheme: 'light',
         lastDarkTheme: 'dark',
@@ -439,6 +443,7 @@ const useAppStore = create(
     {
       name: 'hdesk_wiki_store',
       partialize: (state) => ({
+        uiScale: state.uiScale,
         theme: state.theme,
         lastLightTheme: state.lastLightTheme,
         lastDarkTheme: state.lastDarkTheme,
@@ -455,6 +460,8 @@ const useAppStore = create(
           const theme = state.theme || 'light'
           const ct = (state.customThemes || []).find((t) => t.id === theme)
           document.documentElement.setAttribute('data-theme', ct ? ct.baseTheme : theme)
+          const scale = state.uiScale || 1
+          document.documentElement.style.setProperty('--ui-scale', scale)
         }
       },
     }

@@ -27,6 +27,7 @@ export default function App() {
   const theme = useAppStore((s) => s.theme)
   const themeOverrides = useAppStore((s) => s.themeOverrides)
   const customThemes = useAppStore((s) => s.customThemes)
+  const uiScale = useAppStore((s) => s.uiScale)
 
   useEffect(() => {
     const ct = customThemes.find((t) => t.id === theme)
@@ -43,6 +44,10 @@ export default function App() {
       }
     }
   }, [theme, themeOverrides])
+
+  useEffect(() => {
+    document.documentElement.style.setProperty('--ui-scale', uiScale)
+  }, [uiScale])
 
   return (
     <Layout>
