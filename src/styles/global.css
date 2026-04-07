@@ -2360,3 +2360,13 @@ textarea {
 .doc-tree-drag-handle:active { cursor: grabbing; }
 .doc-tree-item:hover .doc-tree-drag-handle { opacity: 1; }
 
+/* Drag overlay ghost */
+.doc-tree-item--overlay {
+  background: var(--color-surface);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+  opacity: 0.92;
+  cursor: grabbing;
+}
+

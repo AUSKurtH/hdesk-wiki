@@ -377,6 +377,12 @@ const useAppStore = create(
           [id]: { ...state.docs[id], ...updates },
         },
       })),
+      moveDoc: (id, newParentId) => set((state) => ({
+        docs: {
+          ...state.docs,
+          [id]: { ...state.docs[id], parentId: newParentId },
+        },
+      })),
       deleteDoc: (id) => set((state) => {
         const newDocs = { ...state.docs }
         // Recursively delete children
