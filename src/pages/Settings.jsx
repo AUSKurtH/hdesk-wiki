@@ -31,6 +31,17 @@ import {
 import * as LucideIcons from 'lucide-react'
 import useAppStore from '../store/useAppStore.js'
 
+// ── Shared helpers ─────────────────────────────────────────────────────────────
+
+const BUILT_IN_THEMES = [
+  { id: 'light',    label: 'Light',    isDark: false },
+  { id: 'dark',     label: 'Dark',     isDark: true  },
+  { id: 'midnight', label: 'Midnight', isDark: true  },
+  { id: 'forest',   label: 'Forest',   isDark: true  },
+  { id: 'ocean',    label: 'Ocean',    isDark: true  },
+  { id: 'warm',     label: 'Warm',     isDark: false },
+]
+
 // ── Theme picker ──────────────────────────────────────────────────────────────
 
 const ALL_THEMES = [
@@ -44,19 +55,22 @@ const ALL_THEMES = [
 
 // Default typography/UI values per theme (mirrors theme.css)
 const THEME_DEFAULTS = {
-  light:    { mdBoldColor: '#1a56db', mdItalicColor: '#6c5ce7', mdCodeColor: '#00A4A6', mdHeadingColor: 'inherit', mdLinkColor: '#2B6CB0', colorPrimary: '#2B6CB0', colorBg: '#F8FAFC', colorSidebar: '#EBF4FF', colorSurface: '#FFFFFF', colorBorder: '#E2E8F0', colorText: '#1A202C' },
-  dark:     { mdBoldColor: '#63B3ED', mdItalicColor: '#B794F4', mdCodeColor: '#4FD1C5', mdHeadingColor: 'inherit', mdLinkColor: '#4299E1', colorPrimary: '#4299E1', colorBg: '#1A202C', colorSidebar: '#2D3748', colorSurface: '#2D3748', colorBorder: '#4A5568', colorText: '#F7FAFC' },
-  midnight: { mdBoldColor: '#A0B8FF', mdItalicColor: '#C4B5FD', mdCodeColor: '#67E8F9', mdHeadingColor: 'inherit', mdLinkColor: '#7C9EFF', colorPrimary: '#7C9EFF', colorBg: '#0D1117', colorSidebar: '#161B22', colorSurface: '#161B22', colorBorder: '#30363D', colorText: '#E6EDF3' },
-  forest:   { mdBoldColor: '#86EFAC', mdItalicColor: '#6EE7B7', mdCodeColor: '#4ADE80', mdHeadingColor: 'inherit', mdLinkColor: '#34D399', colorPrimary: '#4ADE80', colorBg: '#0C1A0E', colorSidebar: '#122016', colorSurface: '#162A1A', colorBorder: '#1E3A24', colorText: '#DCFCE7' },
-  ocean:    { mdBoldColor: '#7DD3FC', mdItalicColor: '#67E8F9', mdCodeColor: '#22D3EE', mdHeadingColor: 'inherit', mdLinkColor: '#38BDF8', colorPrimary: '#38BDF8', colorBg: '#03111C', colorSidebar: '#061A2B', colorSurface: '#082032', colorBorder: '#0C2D46', colorText: '#E0F2FE' },
-  warm:     { mdBoldColor: '#92400E', mdItalicColor: '#7C3AED', mdCodeColor: '#065F46', mdHeadingColor: 'inherit', mdLinkColor: '#B45309', colorPrimary: '#B45309', colorBg: '#FFFBF0', colorSidebar: '#FEF3C7', colorSurface: '#FFFFFF', colorBorder: '#E7D9C1', colorText: '#1C1917' },
+  light:    { mdBoldColor: '#1a56db', mdItalicColor: '#6c5ce7', mdCodeColor: '#00A4A6', mdHeadingColor: 'inherit', mdH1Color: 'inherit', mdH2Color: 'inherit', mdH3Color: 'inherit', mdLinkColor: '#2B6CB0', colorPrimary: '#2B6CB0', colorBg: '#F8FAFC', colorSidebar: '#EBF4FF', colorSurface: '#FFFFFF', colorBorder: '#E2E8F0', colorText: '#1A202C' },
+  dark:     { mdBoldColor: '#63B3ED', mdItalicColor: '#B794F4', mdCodeColor: '#4FD1C5', mdHeadingColor: 'inherit', mdH1Color: 'inherit', mdH2Color: 'inherit', mdH3Color: 'inherit', mdLinkColor: '#4299E1', colorPrimary: '#4299E1', colorBg: '#1A202C', colorSidebar: '#2D3748', colorSurface: '#2D3748', colorBorder: '#4A5568', colorText: '#F7FAFC' },
+  midnight: { mdBoldColor: '#A0B8FF', mdItalicColor: '#C4B5FD', mdCodeColor: '#67E8F9', mdHeadingColor: 'inherit', mdH1Color: 'inherit', mdH2Color: 'inherit', mdH3Color: 'inherit', mdLinkColor: '#7C9EFF', colorPrimary: '#7C9EFF', colorBg: '#0D1117', colorSidebar: '#161B22', colorSurface: '#161B22', colorBorder: '#30363D', colorText: '#E6EDF3' },
+  forest:   { mdBoldColor: '#86EFAC', mdItalicColor: '#6EE7B7', mdCodeColor: '#4ADE80', mdHeadingColor: 'inherit', mdH1Color: 'inherit', mdH2Color: 'inherit', mdH3Color: 'inherit', mdLinkColor: '#34D399', colorPrimary: '#4ADE80', colorBg: '#0C1A0E', colorSidebar: '#122016', colorSurface: '#162A1A', colorBorder: '#1E3A24', colorText: '#DCFCE7' },
+  ocean:    { mdBoldColor: '#7DD3FC', mdItalicColor: '#67E8F9', mdCodeColor: '#22D3EE', mdHeadingColor: 'inherit', mdH1Color: 'inherit', mdH2Color: 'inherit', mdH3Color: 'inherit', mdLinkColor: '#38BDF8', colorPrimary: '#38BDF8', colorBg: '#03111C', colorSidebar: '#061A2B', colorSurface: '#082032', colorBorder: '#0C2D46', colorText: '#E0F2FE' },
+  warm:     { mdBoldColor: '#92400E', mdItalicColor: '#7C3AED', mdCodeColor: '#065F46', mdHeadingColor: 'inherit', mdH1Color: 'inherit', mdH2Color: 'inherit', mdH3Color: 'inherit', mdLinkColor: '#B45309', colorPrimary: '#B45309', colorBg: '#FFFBF0', colorSidebar: '#FEF3C7', colorSurface: '#FFFFFF', colorBorder: '#E7D9C1', colorText: '#1C1917' },
 }
 
 const TYPOGRAPHY_FIELDS = [
   { key: 'mdBoldColor',    label: 'Bold colour' },
   { key: 'mdItalicColor',  label: 'Italic colour' },
   { key: 'mdCodeColor',    label: 'Code colour' },
-  { key: 'mdHeadingColor', label: 'Heading colour' },
+  { key: 'mdHeadingColor', label: 'Heading colour (fallback)' },
+  { key: 'mdH1Color',      label: 'H1 colour' },
+  { key: 'mdH2Color',      label: 'H2 colour' },
+  { key: 'mdH3Color',      label: 'H3 colour' },
   { key: 'mdLinkColor',    label: 'Link colour' },
 ]
 
@@ -139,11 +153,41 @@ function ThemeSection() {
   const themeOverrides = useAppStore((s) => s.themeOverrides)
   const setThemeOverride = useAppStore((s) => s.setThemeOverride)
   const clearThemeOverrides = useAppStore((s) => s.clearThemeOverrides)
+  const customThemes = useAppStore((s) => s.customThemes)
+  const addCustomTheme = useAppStore((s) => s.addCustomTheme)
+  const deleteCustomTheme = useAppStore((s) => s.deleteCustomTheme)
+
+  const [showAddForm, setShowAddForm] = useState(false)
+  const [newThemeName, setNewThemeName] = useState('')
+  const [newThemeBase, setNewThemeBase] = useState('dark')
+
+  const handleCreateTheme = () => {
+    const name = newThemeName.trim() || `Custom ${(customThemes.length + 1)}`
+    const base = BUILT_IN_THEMES.find((t) => t.id === newThemeBase) || BUILT_IN_THEMES[1]
+    const initialVars = THEME_DEFAULTS[newThemeBase] || {}
+    addCustomTheme(name, newThemeBase, base.isDark, initialVars)
+    setNewThemeName('')
+    setShowAddForm(false)
+  }
+
+  // Derive preview colours for a custom theme from its overrides
+  const customPreview = (ct) => {
+    const vars = themeOverrides[ct.id] || {}
+    const base = THEME_DEFAULTS[ct.baseTheme] || {}
+    return {
+      bg:      vars.colorBg      || base.colorBg      || '#1A202C',
+      surface: vars.colorSurface || base.colorSurface || '#2D3748',
+      primary: vars.colorPrimary || base.colorPrimary || '#4299E1',
+      text:    vars.colorText    || base.colorText    || '#F7FAFC',
+    }
+  }
 
   return (
     <section className="settings-section card">
       <h2 className="settings-section-title">Theme</h2>
       <p className="settings-section-desc">Choose a colour theme for the whole app. The light/dark toggle in the header will switch between your last-used light and dark themes.</p>
+
+      {/* ── Built-in themes ── */}
       <div className="theme-picker-grid">
         {ALL_THEMES.map((t) => {
           const [bg, surface, primary, text] = t.preview
@@ -171,6 +215,82 @@ function ThemeSection() {
           )
         })}
       </div>
+
+      {/* ── Custom themes row ── */}
+      <div className="custom-theme-row">
+        {customThemes.map((ct) => {
+          const { bg, surface, primary, text } = customPreview(ct)
+          const active = theme === ct.id
+          return (
+            <div key={ct.id} className="theme-swatch--custom">
+              <button
+                className={`theme-swatch${active ? ' theme-swatch--active' : ''}`}
+                onClick={() => setTheme(ct.id)}
+                title={ct.label}
+              >
+                <div className="theme-swatch-preview" style={{ background: bg }}>
+                  <div className="theme-swatch-sidebar" style={{ background: surface }} />
+                  <div className="theme-swatch-content">
+                    <div className="theme-swatch-bar" style={{ background: primary }} />
+                    <div className="theme-swatch-bar theme-swatch-bar--thin" style={{ background: text, opacity: 0.4 }} />
+                    <div className="theme-swatch-bar theme-swatch-bar--thin" style={{ background: text, opacity: 0.25 }} />
+                  </div>
+                </div>
+                <span className="theme-swatch-label" style={{ color: active ? 'var(--color-primary)' : undefined }}>
+                  {active && <Check size={11} style={{ marginRight: 3 }} />}
+                  {ct.label}
+                </span>
+              </button>
+              <button
+                className="theme-swatch-delete"
+                title="Delete custom theme"
+                onClick={(e) => { e.stopPropagation(); deleteCustomTheme(ct.id) }}
+              >×</button>
+            </div>
+          )
+        })}
+
+        {/* Add button */}
+        <button
+          className="theme-swatch"
+          onClick={() => setShowAddForm((v) => !v)}
+          title="Add custom theme"
+          style={{ border: '2px dashed var(--color-border)', background: 'transparent' }}
+        >
+          <div className="theme-swatch-preview" style={{ background: 'var(--color-surface-alt)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Plus size={20} style={{ color: 'var(--color-text-muted)' }} />
+          </div>
+          <span className="theme-swatch-label">New</span>
+        </button>
+      </div>
+
+      {/* ── New custom theme form ── */}
+      {showAddForm && (
+        <div className="custom-theme-add-form">
+          <div className="form-field" style={{ flex: 1, minWidth: 140 }}>
+            <label className="label">Theme name</label>
+            <input
+              className="input"
+              value={newThemeName}
+              onChange={(e) => setNewThemeName(e.target.value)}
+              placeholder={`Custom ${customThemes.length + 1}`}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleCreateTheme(); if (e.key === 'Escape') setShowAddForm(false) }}
+              autoFocus
+            />
+          </div>
+          <div className="form-field" style={{ flex: 1, minWidth: 120 }}>
+            <label className="label">Copy from</label>
+            <select className="input" value={newThemeBase} onChange={(e) => setNewThemeBase(e.target.value)}>
+              {ALL_THEMES.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}
+            </select>
+          </div>
+          <div style={{ display: 'flex', gap: 6, paddingBottom: 1 }}>
+            <button className="btn btn-primary btn-sm" onClick={handleCreateTheme}><Check size={13} /> Create</button>
+            <button className="btn btn-ghost btn-sm" onClick={() => setShowAddForm(false)}><X size={13} /></button>
+          </div>
+        </div>
+      )}
+
       <AppearanceSection
         theme={theme}
         themeOverrides={themeOverrides}

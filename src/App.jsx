@@ -7,26 +7,31 @@ import Settings from './pages/Settings.jsx'
 import useAppStore from './store/useAppStore.js'
 
 const CSS_VAR_MAP = {
-  mdBoldColor: '--md-bold-color',
-  mdItalicColor: '--md-italic-color',
-  mdCodeColor: '--md-code-color',
+  mdBoldColor:    '--md-bold-color',
+  mdItalicColor:  '--md-italic-color',
+  mdCodeColor:    '--md-code-color',
   mdHeadingColor: '--md-heading-color',
-  mdLinkColor: '--md-link-color',
-  colorPrimary: '--color-primary',
-  colorBg: '--color-bg',
-  colorSidebar: '--color-sidebar',
-  colorSurface: '--color-surface',
-  colorBorder: '--color-border',
-  colorText: '--color-text',
+  mdH1Color:      '--md-h1-color',
+  mdH2Color:      '--md-h2-color',
+  mdH3Color:      '--md-h3-color',
+  mdLinkColor:    '--md-link-color',
+  colorPrimary:   '--color-primary',
+  colorBg:        '--color-bg',
+  colorSidebar:   '--color-sidebar',
+  colorSurface:   '--color-surface',
+  colorBorder:    '--color-border',
+  colorText:      '--color-text',
 }
 
 export default function App() {
   const theme = useAppStore((s) => s.theme)
   const themeOverrides = useAppStore((s) => s.themeOverrides)
+  const customThemes = useAppStore((s) => s.customThemes)
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme)
-  }, [theme])
+    const ct = customThemes.find((t) => t.id === theme)
+    document.documentElement.setAttribute('data-theme', ct ? ct.baseTheme : theme)
+  }, [theme, customThemes])
 
   useEffect(() => {
     const override = themeOverrides[theme] || {}

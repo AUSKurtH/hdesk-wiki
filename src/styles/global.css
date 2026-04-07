@@ -471,6 +471,9 @@ input, textarea, select {
   border-top: 1px solid var(--color-border);
   font-size: 11px;
   color: var(--color-text-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .sidebar-footer-text {
@@ -2223,8 +2226,115 @@ textarea {
 /* md-syntax link style */
 .md-syntax--link { color: var(--md-link-color, var(--color-primary)); opacity: 0.5; font-size: 0.82em; }
 
+/* md-syntax heading prefix */
+.md-syntax--heading { color: var(--color-primary); opacity: 0.45; font-size: 0.88em; font-weight: 600; }
+
 /* Sidebar footer second line */
-.sidebar-footer-sub { font-size: 10px; color: var(--color-text-subtle); margin-top: 2px; }
+.sidebar-footer-sub { font-size: 10px; color: var(--color-text-subtle); }
+
+/* ── Color picker popup ──────────────────────────────────── */
+.color-picker-popup {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 8px;
+  box-shadow: var(--shadow-lg);
+}
+
+.color-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 22px);
+  gap: 4px;
+}
+
+.color-picker-swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform 100ms ease, border-color 100ms ease;
+}
+
+.color-picker-swatch:hover {
+  transform: scale(1.18);
+  border-color: var(--color-text);
+}
+
+.color-picker-swatch--clear {
+  background: transparent !important;
+  border: 2px dashed var(--color-border);
+  position: relative;
+}
+
+.color-picker-swatch--clear::before,
+.color-picker-swatch--clear::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 60%;
+  height: 1.5px;
+  background: var(--color-text-muted);
+  border-radius: 1px;
+}
+
+.color-picker-swatch--clear::before { transform: translate(-50%, -50%) rotate(45deg); }
+.color-picker-swatch--clear::after  { transform: translate(-50%, -50%) rotate(-45deg); }
+
+/* ── H1/H2/H3 heading colours in editor ─────────────────── */
+.wiki-editor .ProseMirror h1 { color: var(--md-h1-color, var(--md-heading-color, inherit)); }
+.wiki-editor .ProseMirror h2 { color: var(--md-h2-color, var(--md-heading-color, inherit)); }
+.wiki-editor .ProseMirror h3 { color: var(--md-h3-color, var(--md-heading-color, inherit)); }
+
+/* Custom themes second-row */
+.custom-theme-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.custom-theme-add-form {
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.theme-swatch--custom {
+  position: relative;
+}
+
+.theme-swatch--custom .theme-swatch-delete {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-danger);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 9px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.theme-swatch--custom:hover .theme-swatch-delete {
+  display: flex;
+}
 
 /* Settings manage-categories drag handle */
 .settings-list-drag { display: flex; align-items: center; color: var(--color-text-subtle); cursor: grab; padding: 0 4px; }

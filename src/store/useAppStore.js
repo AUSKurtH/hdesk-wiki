@@ -259,22 +259,25 @@ const useAppStore = create(
       lastLightTheme: 'light',
       lastDarkTheme: 'dark',
       themeOverrides: {},
+      customThemes: [],
       setTheme: (id) => {
+        const state = get()
         const LIGHT_THEMES = ['light', 'warm']
+        const ct = (state.customThemes || []).find((t) => t.id === id)
+        const isDark = ct ? ct.isDark : !LIGHT_THEMES.includes(id)
         const update = { theme: id }
-        if (LIGHT_THEMES.includes(id)) update.lastLightTheme = id
+        if (!isDark) update.lastLightTheme = id
         else update.lastDarkTheme = id
         set(update)
-        document.documentElement.setAttribute('data-theme', id)
+        // App.jsx useEffect handles the actual data-theme attribute
       },
       toggleTheme: () => {
-        const LIGHT_THEMES = ['light', 'warm']
         const state = get()
-        const next = LIGHT_THEMES.includes(state.theme)
-          ? state.lastDarkTheme
-          : state.lastLightTheme
+        const LIGHT_THEMES = ['light', 'warm']
+        const ct = (state.customThemes || []).find((t) => t.id === state.theme)
+        const isCurrentDark = ct ? ct.isDark : !LIGHT_THEMES.includes(state.theme)
+        const next = isCurrentDark ? state.lastLightTheme : state.lastDarkTheme
         set({ theme: next })
-        document.documentElement.setAttribute('data-theme', next)
       },
       setThemeOverride: (themeId, key, value) => set((state) => {
         const existing = state.themeOverrides[themeId] || {}
@@ -292,6 +295,32 @@ const useAppStore = create(
         const overrides = { ...state.themeOverrides }
         delete overrides[themeId]
         return { themeOverrides: overrides }
+      }),
+      // Custom themes — stored as { id, label, isDark, baseTheme }
+      // Their colour overrides live in themeOverrides[id]
+      addCustomTheme: (label, baseTheme, isDark, initialVars) => {
+        const id = `custom-${Date.now()}`
+        set((state) => ({
+          customThemes: [...(state.customThemes || []), { id, label, isDark, baseTheme }],
+          themeOverrides: {
+            ...state.themeOverrides,
+            [id]: { ...(initialVars || {}) },
+          },
+          theme: id,
+        }))
+        return id
+      },
+      updateCustomTheme: (id, updates) => set((state) => ({
+        customThemes: (state.customThemes || []).map((t) =>
+          t.id === id ? { ...t, ...updates } : t
+        ),
+      })),
+      deleteCustomTheme: (id) => set((state) => {
+        const customThemes = (state.customThemes || []).filter((t) => t.id !== id)
+        const overrides = { ...state.themeOverrides }
+        delete overrides[id]
+        const theme = state.theme === id ? 'light' : state.theme
+        return { customThemes, themeOverrides: overrides, theme }
       }),
 
       // Categories
@@ -393,6 +422,7 @@ const useAppStore = create(
         lastLightTheme: 'light',
         lastDarkTheme: 'dark',
         themeOverrides: {},
+        customThemes: [],
         categories: DEFAULT_CATEGORIES,
         tools: DEFAULT_TOOLS,
         docs: DEFAULT_DOCS,
@@ -407,6 +437,7 @@ const useAppStore = create(
         lastLightTheme: state.lastLightTheme,
         lastDarkTheme: state.lastDarkTheme,
         themeOverrides: state.themeOverrides,
+        customThemes: state.customThemes,
         categories: state.categories,
         tools: state.tools,
         docs: state.docs,
@@ -415,7 +446,9 @@ const useAppStore = create(
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {
-          document.documentElement.setAttribute('data-theme', state.theme || 'light')
+          const theme = state.theme || 'light'
+          const ct = (state.customThemes || []).find((t) => t.id === theme)
+          document.documentElement.setAttribute('data-theme', ct ? ct.baseTheme : theme)
         }
       },
     }

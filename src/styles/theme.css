@@ -44,6 +44,9 @@
   --md-italic-color: #6c5ce7;
   --md-code-color: #00A4A6;
   --md-heading-color: inherit;
+  --md-h1-color: inherit;
+  --md-h2-color: inherit;
+  --md-h3-color: inherit;
   --md-link-color: #2B6CB0;
 }
 
@@ -79,6 +82,9 @@
   --md-italic-color: #B794F4;
   --md-code-color: #4FD1C5;
   --md-heading-color: inherit;
+  --md-h1-color: inherit;
+  --md-h2-color: inherit;
+  --md-h3-color: inherit;
   --md-link-color: #4299E1;
 }
 
@@ -114,6 +120,9 @@
   --md-italic-color: #C4B5FD;
   --md-code-color: #67E8F9;
   --md-heading-color: inherit;
+  --md-h1-color: inherit;
+  --md-h2-color: inherit;
+  --md-h3-color: inherit;
   --md-link-color: #7C9EFF;
 }
 
@@ -149,6 +158,9 @@
   --md-italic-color: #6EE7B7;
   --md-code-color: #4ADE80;
   --md-heading-color: inherit;
+  --md-h1-color: inherit;
+  --md-h2-color: inherit;
+  --md-h3-color: inherit;
   --md-link-color: #34D399;
 }
 
@@ -184,6 +196,9 @@
   --md-italic-color: #67E8F9;
   --md-code-color: #22D3EE;
   --md-heading-color: inherit;
+  --md-h1-color: inherit;
+  --md-h2-color: inherit;
+  --md-h3-color: inherit;
   --md-link-color: #38BDF8;
 }
 
@@ -219,5 +234,8 @@
   --md-italic-color: #7C3AED;
   --md-code-color: #065F46;
   --md-heading-color: inherit;
+  --md-h1-color: inherit;
+  --md-h2-color: inherit;
+  --md-h3-color: inherit;
   --md-link-color: #B45309;
 }

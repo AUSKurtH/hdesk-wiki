@@ -15,7 +15,7 @@ import {
   Bold, Italic, Code, Strikethrough,
   Heading1, Heading2, Heading3,
   List, ListOrdered, Quote, Minus, Table as TableIcon,
-  Link2, Palette, X as XIcon,
+  Link2, Palette,
 } from 'lucide-react'
 
 marked.setOptions({ breaks: true, gfm: true })
@@ -39,6 +39,75 @@ function htmlToMarkdown(html) {
   return td.turndown(html)
 }
 
+const COLOR_PALETTE = [
+  { label: 'Clear',   value: null },
+  { label: 'Blue',    value: '#2B6CB0' },
+  { label: 'Teal',    value: '#00A4A6' },
+  { label: 'Green',   value: '#2F855A' },
+  { label: 'Lime',    value: '#6B8E23' },
+  { label: 'Purple',  value: '#6B46C1' },
+  { label: 'Pink',    value: '#B83280' },
+  { label: 'Red',     value: '#C53030' },
+  { label: 'Orange',  value: '#C05621' },
+  { label: 'Yellow',  value: '#B7791F' },
+  { label: 'Slate',   value: '#4A5568' },
+  { label: 'Indigo',  value: '#3C366B' },
+  { label: 'Cyan',    value: '#086F83' },
+]
+
+function ColorPicker({ editor, anchorRef, onClose }) {
+  const pickerRef = useRef()
+  const [pos, setPos] = useState({ top: 0, left: 0 })
+
+  useEffect(() => {
+    if (anchorRef.current) {
+      const rect = anchorRef.current.getBoundingClientRect()
+      setPos({ top: rect.bottom + 6, left: rect.left })
+    }
+  }, [anchorRef])
+
+  useEffect(() => {
+    function handleMouseDown(e) {
+      if (
+        pickerRef.current && !pickerRef.current.contains(e.target) &&
+        anchorRef.current && !anchorRef.current.contains(e.target)
+      ) onClose()
+    }
+    document.addEventListener('mousedown', handleMouseDown)
+    return () => document.removeEventListener('mousedown', handleMouseDown)
+  }, [onClose, anchorRef])
+
+  return createPortal(
+    <div
+      ref={pickerRef}
+      className="color-picker-popup"
+      style={{ position: 'fixed', top: pos.top, left: pos.left, zIndex: 9999 }}
+    >
+      <div className="color-picker-grid">
+        {COLOR_PALETTE.map((c) => (
+          <button
+            key={c.label}
+            type="button"
+            className={`color-picker-swatch${c.value === null ? ' color-picker-swatch--clear' : ''}`}
+            title={c.label}
+            onMouseDown={(e) => {
+              e.preventDefault()
+              if (c.value === null) {
+                editor.chain().focus().unsetColor().run()
+              } else {
+                editor.chain().focus().setColor(c.value).run()
+              }
+              onClose()
+            }}
+            style={c.value ? { background: c.value } : {}}
+          />
+        ))}
+      </div>
+    </div>,
+    document.body
+  )
+}
+
 function ToolbarButton({ onClick, active, title, children, danger }) {
   return (
     <button
@@ -59,7 +128,6 @@ function TableGridPicker({ anchorRef, onInsert, onClose }) {
   const [hover, setHover] = useState({ r: 0, c: 0 })
   const pickerRef = useRef()
 
-  // Position relative to the anchor button using fixed coords
   const [pos, setPos] = useState({ top: 0, left: 0 })
   useEffect(() => {
     if (anchorRef.current) {
@@ -111,9 +179,13 @@ function TableGridPicker({ anchorRef, onInsert, onClose }) {
 export default function WikiEditor({ value = '', onChange, placeholder = 'Start writing…', readOnly = false, showToolbar = true }) {
   const onChangeRef = useRef(onChange)
   onChangeRef.current = onChange
+
+  const isInternalUpdateRef = useRef(false)
+
   const [showTablePicker, setShowTablePicker] = useState(false)
+  const [showColorPicker, setShowColorPicker] = useState(false)
   const tableButtonRef = useRef()
-  const colorInputRef = useRef()
+  const colorButtonRef = useRef()
 
   const editor = useEditor({
     extensions: [
@@ -130,18 +202,38 @@ export default function WikiEditor({ value = '', onChange, placeholder = 'Start 
     ],
     editable: !readOnly,
     content: markdownToHtml(value),
+    editorProps: {
+      handleClick(view, pos, event) {
+        // Prevent link navigation while in edit mode
+        if (!readOnly) {
+          const target = event.target
+          if (target.tagName === 'A' || target.closest?.('a')) {
+            event.preventDefault()
+            return true
+          }
+        }
+        return false
+      },
+    },
     onUpdate({ editor }) {
+      // Flag this as an internal change so the useEffect below won't reset cursor
+      isInternalUpdateRef.current = true
       const html = editor.getHTML()
       onChangeRef.current?.(htmlToMarkdown(html))
     },
   })
 
+  // Sync external value changes (e.g., switching docs) WITHOUT resetting cursor
   const lastValueRef = useRef(value)
   useEffect(() => {
     if (!editor) return
     if (value !== lastValueRef.current) {
       lastValueRef.current = value
-      editor.commands.setContent(markdownToHtml(value), false)
+      if (!isInternalUpdateRef.current) {
+        // Only replace content when the change came from outside the editor
+        editor.commands.setContent(markdownToHtml(value), false)
+      }
+      isInternalUpdateRef.current = false
     }
   }, [value, editor])
 
@@ -246,29 +338,24 @@ export default function WikiEditor({ value = '', onChange, placeholder = 'Start 
             </ToolbarButton>
           </div>
           <div className="wiki-toolbar-divider" />
-          {/* Text colour */}
+          {/* Text colour — 13-colour palette */}
           <div className="wiki-toolbar-group">
             <button
               type="button"
-              className="wiki-toolbar-btn"
+              ref={colorButtonRef}
+              className={`wiki-toolbar-btn${showColorPicker ? ' wiki-toolbar-btn--active' : ''}`}
               title="Text Colour"
-              onMouseDown={(e) => { e.preventDefault(); colorInputRef.current?.click() }}
+              onMouseDown={(e) => { e.preventDefault(); setShowColorPicker((v) => !v) }}
             >
               <Palette size={15} />
             </button>
-            <input
-              ref={colorInputRef}
-              type="color"
-              style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: 0, height: 0 }}
-              onChange={(e) => { editor.chain().focus().setColor(e.target.value).run() }}
-            />
-            <ToolbarButton
-              onClick={() => editor.chain().focus().unsetColor().run()}
-              active={false}
-              title="Clear text colour"
-            >
-              <XIcon size={13} />
-            </ToolbarButton>
+            {showColorPicker && (
+              <ColorPicker
+                editor={editor}
+                anchorRef={colorButtonRef}
+                onClose={() => setShowColorPicker(false)}
+              />
+            )}
           </div>
         </div>
       )}
