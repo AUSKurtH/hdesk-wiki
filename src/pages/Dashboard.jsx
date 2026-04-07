@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Search, X, Plus } from 'lucide-react'
 import ToolGrid from '../components/ToolGrid.jsx'
+import QRGPanel from '../components/QRGPanel.jsx'
 import useAppStore from '../store/useAppStore.js'
 import * as LucideIcons from 'lucide-react'
 
@@ -159,9 +160,16 @@ function ToolModal({ tool, defaultCategory, onClose }) {
 
 export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState('')
+  const [selectedTool, setSelectedTool] = useState(null)
   const [modalTool, setModalTool] = useState(null)
   const [modalCategory, setModalCategory] = useState(null)
   const [showModal, setShowModal] = useState(false)
+
+  // Keep selectedTool in sync if it gets edited via the store
+  const tools = useAppStore((s) => s.tools)
+  const liveSelectedTool = selectedTool
+    ? tools.find((t) => t.id === selectedTool.id) || null
+    : null
 
   const handleEditTool = (tool, category = null) => {
     setModalTool(tool)
@@ -177,7 +185,7 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard">
-      {/* Search bar */}
+      {/* Toolbar */}
       <div className="dashboard-toolbar">
         <div className="search-wrap">
           <Search size={16} className="search-icon" />
@@ -207,7 +215,20 @@ export default function Dashboard() {
         </button>
       </div>
 
-      <ToolGrid searchQuery={searchQuery} onEditTool={handleEditTool} />
+      {/* Split layout */}
+      <div className="dashboard-split">
+        <div className="dashboard-left">
+          <ToolGrid
+            searchQuery={searchQuery}
+            onEditTool={handleEditTool}
+            onSelectTool={setSelectedTool}
+            selectedToolId={liveSelectedTool?.id}
+          />
+        </div>
+        <div className="dashboard-right">
+          <QRGPanel tool={liveSelectedTool} />
+        </div>
+      </div>
 
       {showModal && (
         <ToolModal

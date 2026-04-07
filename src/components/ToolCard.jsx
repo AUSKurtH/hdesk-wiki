@@ -1,27 +1,27 @@
 import React from 'react'
 import * as LucideIcons from 'lucide-react'
 
-export default function ToolCard({ tool, onEdit }) {
+export default function ToolCard({ tool, onSelect, onEdit, selected }) {
   const IconComponent = LucideIcons[tool.icon] || LucideIcons.Globe
 
   const handleClick = (e) => {
     if (e.target.closest('.tool-card-edit')) return
-    window.open(tool.url, '_blank', 'noopener,noreferrer')
+    onSelect && onSelect(tool)
   }
 
   return (
     <div
-      className="tool-card card"
+      className={`tool-card card${selected ? ' tool-card--selected' : ''}`}
       onClick={handleClick}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault()
-          window.open(tool.url, '_blank', 'noopener,noreferrer')
+          onSelect && onSelect(tool)
         }
       }}
-      title={`Open ${tool.name}`}
+      title={tool.name}
     >
       <div className="tool-card-icon">
         <IconComponent size={28} strokeWidth={1.5} />

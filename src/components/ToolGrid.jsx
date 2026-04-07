@@ -3,7 +3,7 @@ import { ChevronDown, ChevronRight, Plus } from 'lucide-react'
 import ToolCard from './ToolCard.jsx'
 import useAppStore from '../store/useAppStore.js'
 
-export default function ToolGrid({ searchQuery = '', onEditTool }) {
+export default function ToolGrid({ searchQuery = '', onEditTool, onSelectTool, selectedToolId }) {
   const categories = useAppStore((s) => s.categories)
   const tools = useAppStore((s) => s.tools)
   const [collapsed, setCollapsed] = useState({})
@@ -68,7 +68,13 @@ export default function ToolGrid({ searchQuery = '', onEditTool }) {
             {!isCollapsed && (
               <div className="tool-cards-grid">
                 {categoryTools.map((tool) => (
-                  <ToolCard key={tool.id} tool={tool} onEdit={onEditTool} />
+                  <ToolCard
+                    key={tool.id}
+                    tool={tool}
+                    onEdit={onEditTool}
+                    onSelect={onSelectTool}
+                    selected={tool.id === selectedToolId}
+                  />
                 ))}
                 <button
                   className="tool-add-card"
