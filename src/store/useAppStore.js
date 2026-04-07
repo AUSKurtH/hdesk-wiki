@@ -360,6 +360,90 @@ const useAppStore = create(
         return { tools: [...otherTools, ...categoryTools] }
       }),
 
+      // Work Board (vertical columns layout)
+      workBoardColumns: [],
+      workBoardTools: [],
+      addWorkBoardColumn: (name) => set((state) => ({
+        workBoardColumns: [...state.workBoardColumns, { id: `col-${Date.now()}`, name }],
+      })),
+      renameWorkBoardColumn: (colId, newName) => set((state) => ({
+        workBoardColumns: state.workBoardColumns.map((c) => (c.id === colId ? { ...c, name: newName } : c)),
+      })),
+      deleteWorkBoardColumn: (colId) => set((state) => ({
+        workBoardColumns: state.workBoardColumns.filter((c) => c.id !== colId),
+        workBoardTools: state.workBoardTools.filter((t) => t.columnId !== colId),
+      })),
+      reorderWorkBoardColumns: (columns) => set({ workBoardColumns: columns }),
+      addWorkBoardTool: (tool) => set((state) => ({
+        workBoardTools: [...state.workBoardTools, { ...tool, id: `tool-${Date.now()}` }],
+      })),
+      updateWorkBoardTool: (id, updates) => set((state) => ({
+        workBoardTools: state.workBoardTools.map((t) => (t.id === id ? { ...t, ...updates } : t)),
+      })),
+      deleteWorkBoardTool: (id) => set((state) => ({
+        workBoardTools: state.workBoardTools.filter((t) => t.id !== id),
+      })),
+      moveWorkBoardTool: (toolId, columnId, position) => set((state) => {
+        const tool = state.workBoardTools.find((t) => t.id === toolId)
+        if (!tool) return state
+
+        const oldColumnTools = state.workBoardTools.filter((t) => t.columnId === tool.columnId && t.id !== toolId)
+        const newColumnTools = state.workBoardTools.filter((t) => t.columnId === columnId && t.id !== toolId)
+
+        const updatedTool = { ...tool, columnId, position: position ?? newColumnTools.length }
+        const newNewColumnTools = [...newColumnTools]
+        newNewColumnTools.splice(updatedTool.position, 0, updatedTool)
+
+        const reorderedNewColumn = newNewColumnTools.map((t, i) => ({ ...t, position: i }))
+
+        return {
+          workBoardTools: [
+            ...state.workBoardTools.filter((t) => t.columnId !== tool.columnId && t.columnId !== columnId),
+            ...oldColumnTools.map((t, i) => ({ ...t, position: i })),
+            ...reorderedNewColumn
+          ]
+        }
+      }),
+      reorderWorkBoardTools: (columnId, toolIds) => set((state) => ({
+        workBoardTools: state.workBoardTools.map((t) =>
+          t.columnId === columnId
+            ? { ...t, position: toolIds.indexOf(t.id) }
+            : t
+        ),
+      })),
+
+      // Self Admin Tools (separate from main dashboard)
+      selfAdminCategories: [],
+      selfAdminTools: [],
+      addSelfAdminCategory: (name) => set((state) => ({
+        selfAdminCategories: [...state.selfAdminCategories, name],
+      })),
+      renameSelfAdminCategory: (oldName, newName) => set((state) => ({
+        selfAdminCategories: state.selfAdminCategories.map((c) => (c === oldName ? newName : c)),
+        selfAdminTools: state.selfAdminTools.map((t) => (t.category === oldName ? { ...t, category: newName } : t)),
+      })),
+      deleteSelfAdminCategory: (name) => set((state) => ({
+        selfAdminCategories: state.selfAdminCategories.filter((c) => c !== name),
+        selfAdminTools: state.selfAdminTools.filter((t) => t.category !== name),
+      })),
+      reorderSelfAdminCategories: (categories) => set({ selfAdminCategories: categories }),
+      addSelfAdminTool: (tool) => set((state) => ({
+        selfAdminTools: [...state.selfAdminTools, { ...tool, id: `tool-${Date.now()}` }],
+      })),
+      updateSelfAdminTool: (id, updates) => set((state) => ({
+        selfAdminTools: state.selfAdminTools.map((t) => (t.id === id ? { ...t, ...updates } : t)),
+      })),
+      deleteSelfAdminTool: (id) => set((state) => ({
+        selfAdminTools: state.selfAdminTools.filter((t) => t.id !== id),
+      })),
+      reorderSelfAdminTools: (category, orderedIds) => set((state) => {
+        const otherTools = state.selfAdminTools.filter((t) => t.category !== category)
+        const categoryTools = orderedIds
+          .map((id) => state.selfAdminTools.find((t) => t.id === id))
+          .filter(Boolean)
+        return { selfAdminTools: [...otherTools, ...categoryTools] }
+      }),
+
       // Docs
       docs: DEFAULT_DOCS,
       docOrder: {},
@@ -435,6 +519,10 @@ const useAppStore = create(
         customThemes: [],
         categories: DEFAULT_CATEGORIES,
         tools: DEFAULT_TOOLS,
+        selfAdminCategories: [],
+        selfAdminTools: [],
+        workBoardColumns: [],
+        workBoardTools: [],
         docs: DEFAULT_DOCS,
         docOrder: {},
         activeDocId: null,
@@ -451,6 +539,10 @@ const useAppStore = create(
         customThemes: state.customThemes,
         categories: state.categories,
         tools: state.tools,
+        selfAdminCategories: state.selfAdminCategories,
+        selfAdminTools: state.selfAdminTools,
+        workBoardColumns: state.workBoardColumns,
+        workBoardTools: state.workBoardTools,
         docs: state.docs,
         docOrder: state.docOrder,
         activeDocId: state.activeDocId,
