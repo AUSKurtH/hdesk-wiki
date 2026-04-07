@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import Sidebar from './Sidebar.jsx'
 import ThemeToggle from './ThemeToggle.jsx'
+import ScaleSlider from './ScaleSlider.jsx'
 
 export default function Layout({ children }) {
   const location = useLocation()
@@ -23,6 +24,7 @@ export default function Layout({ children }) {
         <header className="layout-header">
           <h1 className="layout-header-title">{pageTitle()}</h1>
           <div className="layout-header-actions">
+            <ScaleSlider />
             <ThemeToggle />
           </div>
         </header>
