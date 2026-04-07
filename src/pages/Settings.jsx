@@ -137,6 +137,53 @@ function SortableToolRow({ tool, onEdit, onDelete }) {
   )
 }
 
+// ── Sortable Category Row ─────────────────────────────────────────────────────
+
+function SortableCategoryRow({ cat, getToolsForCat, renamingCat, renameDraft, setRenameDraft, handleConfirmRename, setRenamingCat, handleDeleteCategory, setRenamingCatAndDraft }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: cat })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  }
+
+  return (
+    <li ref={setNodeRef} style={style} className="settings-list-item">
+      {renamingCat === cat ? (
+        <div className="settings-list-item-rename">
+          <input
+            className="input"
+            value={renameDraft}
+            onChange={(e) => setRenameDraft(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleConfirmRename(); if (e.key === 'Escape') setRenamingCat(null) }}
+            autoFocus
+          />
+          <button className="btn btn-primary btn-sm" onClick={handleConfirmRename}><Check size={13} /></button>
+          <button className="btn btn-ghost btn-sm" onClick={() => setRenamingCat(null)}><X size={13} /></button>
+        </div>
+      ) : (
+        <>
+          <span className="settings-list-drag" {...attributes} {...listeners}><GripVertical size={14} /></span>
+          <span className="settings-list-item-name">{cat}</span>
+          <span className="settings-list-item-meta">{getToolsForCat(cat).length} tools</span>
+          <div className="settings-list-item-actions">
+            <button className="btn btn-ghost btn-sm" onClick={() => setRenamingCatAndDraft(cat)} title="Rename"><Pencil size={13} /></button>
+            <button className="btn btn-ghost btn-sm" onClick={() => handleDeleteCategory(cat)} title="Delete" style={{ color: 'var(--color-danger)' }}><Trash2 size={13} /></button>
+          </div>
+        </>
+      )}
+    </li>
+  )
+}
+
 // ── Tool Form ────────────────────────────────────────────────────────────────
 
 function ToolForm({ tool, categories, onSave, onCancel }) {
@@ -213,7 +260,7 @@ function ToolForm({ tool, categories, onSave, onCancel }) {
 // ── Category Accordion ────────────────────────────────────────────────────────
 
 function CategorySection({ category, tools, onEditTool, onDeleteTool, onAddTool, onReorderTools }) {
-  const [collapsed, setCollapsed] = useState(false)
+  const [collapsed, setCollapsed] = useState(true)
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
@@ -266,9 +313,15 @@ export default function Settings() {
   const updateTool = useAppStore((s) => s.updateTool)
   const deleteTool = useAppStore((s) => s.deleteTool)
   const reorderTools = useAppStore((s) => s.reorderTools)
+  const reorderCategories = useAppStore((s) => s.reorderCategories)
   const exportConfig = useAppStore((s) => s.exportConfig)
   const importConfig = useAppStore((s) => s.importConfig)
   const resetToDefaults = useAppStore((s) => s.resetToDefaults)
+
+  const catSensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  )
 
   const [editingTool, setEditingTool] = useState(null)
   const [addingToCategory, setAddingToCategory] = useState(null)
@@ -409,34 +462,35 @@ export default function Settings() {
       {/* ── Categories ────────────────────────────────────── */}
       <section className="settings-section card">
         <h2 className="settings-section-title">Manage Categories</h2>
-        <ul className="settings-list">
-          {categories.map((cat) => (
-            <li key={cat} className="settings-list-item">
-              {renamingCat === cat ? (
-                <div className="settings-list-item-rename">
-                  <input
-                    className="input"
-                    value={renameDraft}
-                    onChange={(e) => setRenameDraft(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === 'Enter') handleConfirmRename(); if (e.key === 'Escape') setRenamingCat(null) }}
-                    autoFocus
-                  />
-                  <button className="btn btn-primary btn-sm" onClick={handleConfirmRename}><Check size={13} /></button>
-                  <button className="btn btn-ghost btn-sm" onClick={() => setRenamingCat(null)}><X size={13} /></button>
-                </div>
-              ) : (
-                <>
-                  <span className="settings-list-item-name">{cat}</span>
-                  <span className="settings-list-item-meta">{getToolsForCat(cat).length} tools</span>
-                  <div className="settings-list-item-actions">
-                    <button className="btn btn-ghost btn-sm" onClick={() => { setRenamingCat(cat); setRenameDraft(cat) }} title="Rename"><Pencil size={13} /></button>
-                    <button className="btn btn-ghost btn-sm" onClick={() => handleDeleteCategory(cat)} title="Delete" style={{ color: 'var(--color-danger)' }}><Trash2 size={13} /></button>
-                  </div>
-                </>
-              )}
-            </li>
-          ))}
-        </ul>
+        <DndContext
+          sensors={catSensors}
+          collisionDetection={closestCenter}
+          onDragEnd={({ active, over }) => {
+            if (!over || active.id === over.id) return
+            const oldIndex = categories.indexOf(active.id)
+            const newIndex = categories.indexOf(over.id)
+            reorderCategories(arrayMove(categories, oldIndex, newIndex))
+          }}
+        >
+          <SortableContext items={categories} strategy={verticalListSortingStrategy}>
+            <ul className="settings-list">
+              {categories.map((cat) => (
+                <SortableCategoryRow
+                  key={cat}
+                  cat={cat}
+                  getToolsForCat={getToolsForCat}
+                  renamingCat={renamingCat}
+                  renameDraft={renameDraft}
+                  setRenameDraft={setRenameDraft}
+                  handleConfirmRename={handleConfirmRename}
+                  setRenamingCat={setRenamingCat}
+                  handleDeleteCategory={handleDeleteCategory}
+                  setRenamingCatAndDraft={(cat) => { setRenamingCat(cat); setRenameDraft(cat) }}
+                />
+              ))}
+            </ul>
+          </SortableContext>
+        </DndContext>
         <div className="settings-add-row">
           <input
             className="input"

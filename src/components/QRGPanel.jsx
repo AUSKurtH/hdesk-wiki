@@ -48,12 +48,14 @@ export default function QRGPanel({ tool }) {
     setHasChanges(false)
   }
 
+  const iconStyle = tool.color ? { background: `${tool.color}30`, color: tool.color } : {}
+
   return (
     <div className="qrg-panel">
       {/* Header */}
       <div className="qrg-header">
         <div className="qrg-tool-identity">
-          <div className="qrg-tool-icon">
+          <div className="qrg-tool-icon" style={iconStyle}>
             <IconComponent size={24} strokeWidth={1.5} />
           </div>
           <div>

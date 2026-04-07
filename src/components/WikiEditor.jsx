@@ -118,7 +118,7 @@ export default function WikiEditor({ value = '', onChange, placeholder = 'Start 
       TableRow,
       TableHeader,
       TableCell,
-      MarkdownDecorations,
+      ...(readOnly ? [] : [MarkdownDecorations]),
     ],
     editable: !readOnly,
     content: markdownToHtml(value),

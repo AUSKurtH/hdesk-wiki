@@ -302,6 +302,10 @@ const useAppStore = create(
 
       // Docs
       docs: DEFAULT_DOCS,
+      docOrder: {},
+      setDocOrder: (parentKey, orderedIds) => set((state) => ({
+        docOrder: { ...state.docOrder, [parentKey]: orderedIds },
+      })),
       activeDocId: null,
       setActiveDoc: (id) => set({ activeDocId: id }),
       addDoc: (doc) => set((state) => ({
@@ -371,6 +375,7 @@ const useAppStore = create(
         categories: state.categories,
         tools: state.tools,
         docs: state.docs,
+        docOrder: state.docOrder,
         activeDocId: state.activeDocId,
       }),
       onRehydrateStorage: () => (state) => {
