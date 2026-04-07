@@ -42,14 +42,108 @@ const ALL_THEMES = [
   { id: 'warm',     label: 'Warm',     dark: false, preview: ['#FFFBF0','#FFFFFF','#B45309','#1C1917'] },
 ]
 
+// Default typography/UI values per theme (mirrors theme.css)
+const THEME_DEFAULTS = {
+  light:    { mdBoldColor: '#1a56db', mdItalicColor: '#6c5ce7', mdCodeColor: '#00A4A6', mdHeadingColor: 'inherit', mdLinkColor: '#2B6CB0', colorPrimary: '#2B6CB0', colorBg: '#F8FAFC', colorSidebar: '#EBF4FF', colorSurface: '#FFFFFF', colorBorder: '#E2E8F0', colorText: '#1A202C' },
+  dark:     { mdBoldColor: '#63B3ED', mdItalicColor: '#B794F4', mdCodeColor: '#4FD1C5', mdHeadingColor: 'inherit', mdLinkColor: '#4299E1', colorPrimary: '#4299E1', colorBg: '#1A202C', colorSidebar: '#2D3748', colorSurface: '#2D3748', colorBorder: '#4A5568', colorText: '#F7FAFC' },
+  midnight: { mdBoldColor: '#A0B8FF', mdItalicColor: '#C4B5FD', mdCodeColor: '#67E8F9', mdHeadingColor: 'inherit', mdLinkColor: '#7C9EFF', colorPrimary: '#7C9EFF', colorBg: '#0D1117', colorSidebar: '#161B22', colorSurface: '#161B22', colorBorder: '#30363D', colorText: '#E6EDF3' },
+  forest:   { mdBoldColor: '#86EFAC', mdItalicColor: '#6EE7B7', mdCodeColor: '#4ADE80', mdHeadingColor: 'inherit', mdLinkColor: '#34D399', colorPrimary: '#4ADE80', colorBg: '#0C1A0E', colorSidebar: '#122016', colorSurface: '#162A1A', colorBorder: '#1E3A24', colorText: '#DCFCE7' },
+  ocean:    { mdBoldColor: '#7DD3FC', mdItalicColor: '#67E8F9', mdCodeColor: '#22D3EE', mdHeadingColor: 'inherit', mdLinkColor: '#38BDF8', colorPrimary: '#38BDF8', colorBg: '#03111C', colorSidebar: '#061A2B', colorSurface: '#082032', colorBorder: '#0C2D46', colorText: '#E0F2FE' },
+  warm:     { mdBoldColor: '#92400E', mdItalicColor: '#7C3AED', mdCodeColor: '#065F46', mdHeadingColor: 'inherit', mdLinkColor: '#B45309', colorPrimary: '#B45309', colorBg: '#FFFBF0', colorSidebar: '#FEF3C7', colorSurface: '#FFFFFF', colorBorder: '#E7D9C1', colorText: '#1C1917' },
+}
+
+const TYPOGRAPHY_FIELDS = [
+  { key: 'mdBoldColor',    label: 'Bold colour' },
+  { key: 'mdItalicColor',  label: 'Italic colour' },
+  { key: 'mdCodeColor',    label: 'Code colour' },
+  { key: 'mdHeadingColor', label: 'Heading colour' },
+  { key: 'mdLinkColor',    label: 'Link colour' },
+]
+
+const UI_FIELDS = [
+  { key: 'colorBg',      label: 'Background' },
+  { key: 'colorSidebar', label: 'Sidebar' },
+  { key: 'colorSurface', label: 'Surface' },
+  { key: 'colorPrimary', label: 'Primary' },
+  { key: 'colorBorder',  label: 'Border' },
+  { key: 'colorText',    label: 'Text' },
+]
+
+function AppearanceSection({ theme, themeOverrides, setThemeOverride, clearThemeOverrides }) {
+  const override = themeOverrides[theme] || {}
+  const defaults = THEME_DEFAULTS[theme] || {}
+
+  const getEffective = (key) => override[key] !== undefined ? override[key] : (defaults[key] || '#000000')
+
+  const renderRow = (field) => {
+    const value = getEffective(field.key)
+    const isOverridden = override[field.key] !== undefined
+    // For 'inherit' values, use a neutral fallback for the color picker
+    const colorValue = value === 'inherit' ? '#000000' : value
+    return (
+      <div key={field.key} className="theme-appearance-row">
+        <span className="theme-appearance-label">{field.label}</span>
+        <input
+          type="color"
+          className="theme-appearance-swatch"
+          value={colorValue}
+          onChange={(e) => setThemeOverride(theme, field.key, e.target.value)}
+          title={`Set ${field.label}`}
+        />
+        {isOverridden && (
+          <button
+            className="btn btn-ghost btn-sm"
+            style={{ padding: '2px 6px' }}
+            onClick={() => {
+              setThemeOverride(theme, field.key, undefined)
+            }}
+            title="Reset to default"
+          >
+            <RotateCcw size={12} />
+          </button>
+        )}
+      </div>
+    )
+  }
+
+  return (
+    <div className="card" style={{ marginTop: 16, padding: 16 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+        <h3 style={{ fontSize: 14, fontWeight: 600, margin: 0 }}>Appearance Overrides</h3>
+        {Object.keys(override).length > 0 && (
+          <button className="btn btn-ghost btn-sm" onClick={() => clearThemeOverrides(theme)} style={{ color: 'var(--color-danger)' }}>
+            <RotateCcw size={12} /> Reset all
+          </button>
+        )}
+      </div>
+      <p style={{ fontSize: 12, color: 'var(--color-text-muted)', marginBottom: 12 }}>Override colours for the current theme. Changes apply instantly.</p>
+      <div style={{ marginBottom: 12 }}>
+        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Typography</div>
+        <div className="theme-appearance-grid">
+          {TYPOGRAPHY_FIELDS.map(renderRow)}
+        </div>
+      </div>
+      <div>
+        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>UI Colours</div>
+        <div className="theme-appearance-grid">
+          {UI_FIELDS.map(renderRow)}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function ThemeSection() {
   const theme = useAppStore((s) => s.theme)
   const setTheme = useAppStore((s) => s.setTheme)
+  const themeOverrides = useAppStore((s) => s.themeOverrides)
+  const setThemeOverride = useAppStore((s) => s.setThemeOverride)
+  const clearThemeOverrides = useAppStore((s) => s.clearThemeOverrides)
 
   return (
     <section className="settings-section card">
       <h2 className="settings-section-title">Theme</h2>
-      <p className="settings-section-desc">Choose a colour theme for the whole app. The light/dark toggle in the header will switch between Light and Dark.</p>
+      <p className="settings-section-desc">Choose a colour theme for the whole app. The light/dark toggle in the header will switch between your last-used light and dark themes.</p>
       <div className="theme-picker-grid">
         {ALL_THEMES.map((t) => {
           const [bg, surface, primary, text] = t.preview
@@ -77,6 +171,12 @@ function ThemeSection() {
           )
         })}
       </div>
+      <AppearanceSection
+        theme={theme}
+        themeOverrides={themeOverrides}
+        setThemeOverride={setThemeOverride}
+        clearThemeOverrides={clearThemeOverrides}
+      />
     </section>
   )
 }

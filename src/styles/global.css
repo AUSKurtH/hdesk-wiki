@@ -1605,7 +1605,7 @@ input, textarea, select {
   margin: 0.2em 0 0.5em;
   padding-bottom: 0.3em;
   border-bottom: 1px solid var(--color-border);
-  color: var(--color-text);
+  color: var(--md-heading-color);
   line-height: 1.3;
 }
 
@@ -1613,7 +1613,7 @@ input, textarea, select {
   font-size: 1.3rem;
   font-weight: 700;
   margin: 1.2em 0 0.4em;
-  color: var(--color-text);
+  color: var(--md-heading-color);
   line-height: 1.3;
 }
 
@@ -1621,7 +1621,7 @@ input, textarea, select {
   font-size: 1.1rem;
   font-weight: 600;
   margin: 1em 0 0.3em;
-  color: var(--color-text);
+  color: var(--md-heading-color);
   line-height: 1.3;
 }
 
@@ -1631,11 +1631,12 @@ input, textarea, select {
 
 .wiki-editor .ProseMirror strong {
   font-weight: 700;
-  color: var(--color-text);
+  color: var(--md-bold-color);
 }
 
 .wiki-editor .ProseMirror em {
   font-style: italic;
+  color: var(--md-italic-color);
 }
 
 .wiki-editor .ProseMirror s {
@@ -1649,7 +1650,7 @@ input, textarea, select {
   padding: 2px 5px;
   border-radius: 4px;
   background: var(--color-surface-hover);
-  color: var(--color-secondary);
+  color: var(--md-code-color);
   border: 1px solid var(--color-border);
 }
 
@@ -1718,7 +1719,7 @@ input, textarea, select {
 }
 
 .wiki-editor .ProseMirror a {
-  color: var(--color-primary);
+  color: var(--md-link-color);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -2214,3 +2215,38 @@ textarea {
   align-items: center;
   justify-content: center;
 }
+
+/* ══════════════════════════════════════════════════════════
+   ADDITIONAL STYLES
+══════════════════════════════════════════════════════════ */
+
+/* md-syntax link style */
+.md-syntax--link { color: var(--md-link-color, var(--color-primary)); opacity: 0.5; font-size: 0.82em; }
+
+/* Sidebar footer second line */
+.sidebar-footer-sub { font-size: 10px; color: var(--color-text-subtle); margin-top: 2px; }
+
+/* Settings manage-categories drag handle */
+.settings-list-drag { display: flex; align-items: center; color: var(--color-text-subtle); cursor: grab; padding: 0 4px; }
+.settings-list-drag:active { cursor: grabbing; }
+
+/* Theme appearance editor */
+.theme-appearance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; margin-top: 8px; }
+.theme-appearance-row { display: flex; align-items: center; gap: 8px; }
+.theme-appearance-label { font-size: 12px; color: var(--color-text-muted); flex: 1; }
+.theme-appearance-swatch { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--color-border); cursor: pointer; padding: 0; }
+
+/* Doc tree drag handle */
+.doc-tree-drag-handle {
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-text-subtle);
+  cursor: grab;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+  flex-shrink: 0;
+  padding: 0 2px;
+}
+.doc-tree-drag-handle:active { cursor: grabbing; }
+.doc-tree-item:hover .doc-tree-drag-handle { opacity: 1; }
+

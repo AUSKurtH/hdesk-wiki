@@ -256,15 +256,43 @@ const useAppStore = create(
     (set, get) => ({
       // Theme
       theme: 'light',
-      setTheme: (theme) => {
-        set({ theme })
-        document.documentElement.setAttribute('data-theme', theme)
+      lastLightTheme: 'light',
+      lastDarkTheme: 'dark',
+      themeOverrides: {},
+      setTheme: (id) => {
+        const LIGHT_THEMES = ['light', 'warm']
+        const update = { theme: id }
+        if (LIGHT_THEMES.includes(id)) update.lastLightTheme = id
+        else update.lastDarkTheme = id
+        set(update)
+        document.documentElement.setAttribute('data-theme', id)
       },
       toggleTheme: () => {
-        const next = get().theme === 'light' ? 'dark' : 'light'
+        const LIGHT_THEMES = ['light', 'warm']
+        const state = get()
+        const next = LIGHT_THEMES.includes(state.theme)
+          ? state.lastDarkTheme
+          : state.lastLightTheme
         set({ theme: next })
         document.documentElement.setAttribute('data-theme', next)
       },
+      setThemeOverride: (themeId, key, value) => set((state) => {
+        const existing = state.themeOverrides[themeId] || {}
+        const updated = { ...existing }
+        if (value === undefined) {
+          delete updated[key]
+        } else {
+          updated[key] = value
+        }
+        return {
+          themeOverrides: { ...state.themeOverrides, [themeId]: updated },
+        }
+      }),
+      clearThemeOverrides: (themeId) => set((state) => {
+        const overrides = { ...state.themeOverrides }
+        delete overrides[themeId]
+        return { themeOverrides: overrides }
+      }),
 
       // Categories
       categories: DEFAULT_CATEGORIES,
@@ -362,9 +390,13 @@ const useAppStore = create(
       },
       resetToDefaults: () => set({
         theme: 'light',
+        lastLightTheme: 'light',
+        lastDarkTheme: 'dark',
+        themeOverrides: {},
         categories: DEFAULT_CATEGORIES,
         tools: DEFAULT_TOOLS,
         docs: DEFAULT_DOCS,
+        docOrder: {},
         activeDocId: null,
       }),
     }),
@@ -372,6 +404,9 @@ const useAppStore = create(
       name: 'hdesk_wiki_store',
       partialize: (state) => ({
         theme: state.theme,
+        lastLightTheme: state.lastLightTheme,
+        lastDarkTheme: state.lastDarkTheme,
+        themeOverrides: state.themeOverrides,
         categories: state.categories,
         tools: state.tools,
         docs: state.docs,

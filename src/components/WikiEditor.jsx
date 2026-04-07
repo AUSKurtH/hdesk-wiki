@@ -4,6 +4,9 @@ import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import { Table, TableRow, TableHeader, TableCell } from '@tiptap/extension-table'
+import Link from '@tiptap/extension-link'
+import { TextStyle } from '@tiptap/extension-text-style'
+import { Color } from '@tiptap/extension-color'
 import { MarkdownDecorations } from './MarkdownDecorations.js'
 import { marked } from 'marked'
 import TurndownService from 'turndown'
@@ -12,6 +15,7 @@ import {
   Bold, Italic, Code, Strikethrough,
   Heading1, Heading2, Heading3,
   List, ListOrdered, Quote, Minus, Table as TableIcon,
+  Link2, Palette, X as XIcon,
 } from 'lucide-react'
 
 marked.setOptions({ breaks: true, gfm: true })
@@ -109,6 +113,7 @@ export default function WikiEditor({ value = '', onChange, placeholder = 'Start 
   onChangeRef.current = onChange
   const [showTablePicker, setShowTablePicker] = useState(false)
   const tableButtonRef = useRef()
+  const colorInputRef = useRef()
 
   const editor = useEditor({
     extensions: [
@@ -118,6 +123,9 @@ export default function WikiEditor({ value = '', onChange, placeholder = 'Start 
       TableRow,
       TableHeader,
       TableCell,
+      Link.configure({ openOnClick: false, HTMLAttributes: { rel: 'noopener noreferrer' } }),
+      TextStyle,
+      Color,
       ...(readOnly ? [] : [MarkdownDecorations]),
     ],
     editable: !readOnly,
@@ -211,6 +219,56 @@ export default function WikiEditor({ value = '', onChange, placeholder = 'Start 
                 <ToolbarButton onClick={() => editor.chain().focus().deleteTable().run()} active={false} danger title="Delete table"><span className="wiki-toolbar-label">Del Table</span></ToolbarButton>
               </>
             )}
+          </div>
+          <div className="wiki-toolbar-divider" />
+          {/* Link */}
+          <div className="wiki-toolbar-group">
+            <ToolbarButton
+              onClick={() => {
+                const url = window.prompt('Enter URL:', editor.getAttributes('link').href || 'https://')
+                if (url === null) return
+                if (!url) {
+                  editor.chain().focus().unsetLink().run()
+                  return
+                }
+                if (editor.state.selection.empty) {
+                  const text = window.prompt('Display text:', url)
+                  if (!text) return
+                  editor.chain().focus().insertContent(`<a href="${url}">${text}</a>`).run()
+                } else {
+                  editor.chain().focus().setLink({ href: url }).run()
+                }
+              }}
+              active={editor.isActive('link')}
+              title="Insert/Edit Link"
+            >
+              <Link2 size={15} />
+            </ToolbarButton>
+          </div>
+          <div className="wiki-toolbar-divider" />
+          {/* Text colour */}
+          <div className="wiki-toolbar-group">
+            <button
+              type="button"
+              className="wiki-toolbar-btn"
+              title="Text Colour"
+              onMouseDown={(e) => { e.preventDefault(); colorInputRef.current?.click() }}
+            >
+              <Palette size={15} />
+            </button>
+            <input
+              ref={colorInputRef}
+              type="color"
+              style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: 0, height: 0 }}
+              onChange={(e) => { editor.chain().focus().setColor(e.target.value).run() }}
+            />
+            <ToolbarButton
+              onClick={() => editor.chain().focus().unsetColor().run()}
+              active={false}
+              title="Clear text colour"
+            >
+              <XIcon size={13} />
+            </ToolbarButton>
           </div>
         </div>
       )}
