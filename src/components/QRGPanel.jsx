@@ -5,10 +5,13 @@ import useAppStore from '../store/useAppStore.js'
 
 export default function QRGPanel({ tool }) {
   const updateTool = useAppStore((s) => s.updateTool)
+  const [isEditing, setIsEditing] = useState(false)
   const [draft, setDraft] = useState('')
   const [hasChanges, setHasChanges] = useState(false)
 
+  // Reset to view mode and sync draft when tool changes
   useEffect(() => {
+    setIsEditing(false)
     setDraft(tool?.qrg || '')
     setHasChanges(false)
   }, [tool?.id])
@@ -27,13 +30,21 @@ export default function QRGPanel({ tool }) {
 
   const IconComponent = LucideIcons[tool.icon] || LucideIcons.Globe
 
+  const handleEdit = () => {
+    setDraft(tool.qrg || '')
+    setHasChanges(false)
+    setIsEditing(true)
+  }
+
   const handleSave = () => {
     updateTool(tool.id, { qrg: draft })
+    setIsEditing(false)
     setHasChanges(false)
   }
 
   const handleDiscard = () => {
     setDraft(tool.qrg || '')
+    setIsEditing(false)
     setHasChanges(false)
   }
 
@@ -64,28 +75,35 @@ export default function QRGPanel({ tool }) {
         </a>
       </div>
 
-      {/* QRG label + save controls */}
+      {/* QRG label + edit controls */}
       <div className="qrg-section-header">
         <span className="qrg-section-label">Quick Reference Guide</span>
-        {hasChanges && (
-          <div className="qrg-edit-actions">
-            <button className="btn btn-secondary btn-sm" onClick={handleDiscard}>
-              Discard
+        <div className="qrg-edit-actions">
+          {isEditing ? (
+            <>
+              <button className="btn btn-secondary btn-sm" onClick={handleDiscard}>
+                <LucideIcons.X size={13} /> Discard
+              </button>
+              <button className="btn btn-primary btn-sm" onClick={handleSave} disabled={!hasChanges}>
+                <LucideIcons.Save size={13} /> Save
+              </button>
+            </>
+          ) : (
+            <button className="btn btn-secondary btn-sm" onClick={handleEdit}>
+              <LucideIcons.Pencil size={13} /> Edit
             </button>
-            <button className="btn btn-primary btn-sm" onClick={handleSave}>
-              Save
-            </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
-      {/* Live editor */}
+      {/* Content */}
       <div className="qrg-content">
         <WikiEditor
           key={tool.id}
-          value={draft}
+          value={isEditing ? draft : (tool.qrg || '')}
           onChange={(md) => { setDraft(md); setHasChanges(true) }}
           placeholder="Write a quick reference guide for this tool…"
+          readOnly={!isEditing}
         />
       </div>
     </div>

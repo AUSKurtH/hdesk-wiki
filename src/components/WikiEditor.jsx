@@ -4,6 +4,7 @@ import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import { Table, TableRow, TableHeader, TableCell } from '@tiptap/extension-table'
+import { MarkdownDecorations } from './MarkdownDecorations.js'
 import { marked } from 'marked'
 import TurndownService from 'turndown'
 import { gfm } from 'turndown-plugin-gfm'
@@ -117,6 +118,7 @@ export default function WikiEditor({ value = '', onChange, placeholder = 'Start 
       TableRow,
       TableHeader,
       TableCell,
+      MarkdownDecorations,
     ],
     editable: !readOnly,
     content: markdownToHtml(value),

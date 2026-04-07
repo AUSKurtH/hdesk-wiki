@@ -31,6 +31,56 @@ import {
 import * as LucideIcons from 'lucide-react'
 import useAppStore from '../store/useAppStore.js'
 
+// ── Theme picker ──────────────────────────────────────────────────────────────
+
+const ALL_THEMES = [
+  { id: 'light',    label: 'Light',    dark: false, preview: ['#F8FAFC','#FFFFFF','#2B6CB0','#1A202C'] },
+  { id: 'dark',     label: 'Dark',     dark: true,  preview: ['#1A202C','#2D3748','#4299E1','#F7FAFC'] },
+  { id: 'midnight', label: 'Midnight', dark: true,  preview: ['#0D1117','#161B22','#7C9EFF','#E6EDF3'] },
+  { id: 'forest',   label: 'Forest',   dark: true,  preview: ['#0C1A0E','#162A1A','#4ADE80','#DCFCE7'] },
+  { id: 'ocean',    label: 'Ocean',    dark: true,  preview: ['#03111C','#082032','#38BDF8','#E0F2FE'] },
+  { id: 'warm',     label: 'Warm',     dark: false, preview: ['#FFFBF0','#FFFFFF','#B45309','#1C1917'] },
+]
+
+function ThemeSection() {
+  const theme = useAppStore((s) => s.theme)
+  const setTheme = useAppStore((s) => s.setTheme)
+
+  return (
+    <section className="settings-section card">
+      <h2 className="settings-section-title">Theme</h2>
+      <p className="settings-section-desc">Choose a colour theme for the whole app. The light/dark toggle in the header will switch between Light and Dark.</p>
+      <div className="theme-picker-grid">
+        {ALL_THEMES.map((t) => {
+          const [bg, surface, primary, text] = t.preview
+          const active = theme === t.id
+          return (
+            <button
+              key={t.id}
+              className={`theme-swatch${active ? ' theme-swatch--active' : ''}`}
+              onClick={() => setTheme(t.id)}
+              title={t.label}
+            >
+              <div className="theme-swatch-preview" style={{ background: bg }}>
+                <div className="theme-swatch-sidebar" style={{ background: surface }} />
+                <div className="theme-swatch-content">
+                  <div className="theme-swatch-bar" style={{ background: primary }} />
+                  <div className="theme-swatch-bar theme-swatch-bar--thin" style={{ background: text, opacity: 0.4 }} />
+                  <div className="theme-swatch-bar theme-swatch-bar--thin" style={{ background: text, opacity: 0.25 }} />
+                </div>
+              </div>
+              <span className="theme-swatch-label" style={{ color: active ? 'var(--color-primary)' : undefined }}>
+                {active && <Check size={11} style={{ marginRight: 3 }} />}
+                {t.label}
+              </span>
+            </button>
+          )
+        })}
+      </div>
+    </section>
+  )
+}
+
 const ICON_OPTIONS = [
   'Globe', 'Ticket', 'LayoutDashboard', 'MessageSquare', 'Video', 'Mail',
   'Monitor', 'MonitorDot', 'Shield', 'GraduationCap', 'Users', 'KeyRound',
@@ -400,6 +450,11 @@ export default function Settings() {
           </button>
         </div>
       </section>
+
+      <div className="divider" />
+
+      {/* ── Themes ───────────────────────────────────────── */}
+      <ThemeSection />
 
       <div className="divider" />
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Save, X, Trash2 } from 'lucide-react'
+import { Save, X, Trash2, Pencil } from 'lucide-react'
 import WikiEditor from './WikiEditor.jsx'
 import useAppStore from '../store/useAppStore.js'
 import { useNavigate } from 'react-router-dom'
@@ -11,12 +11,15 @@ export default function DocEditor({ docId }) {
   const navigate = useNavigate()
 
   const doc = docs[docId]
+  const [isEditing, setIsEditing] = useState(false)
   const [draft, setDraft] = useState('')
   const [titleDraft, setTitleDraft] = useState('')
   const [hasChanges, setHasChanges] = useState(false)
 
+  // Reset to view mode when switching docs
   useEffect(() => {
     if (doc) {
+      setIsEditing(false)
       setDraft(doc.content || '')
       setTitleDraft(doc.title || '')
       setHasChanges(false)
@@ -39,14 +42,23 @@ export default function DocEditor({ docId }) {
     )
   }
 
+  const handleEdit = () => {
+    setDraft(doc.content || '')
+    setTitleDraft(doc.title || '')
+    setHasChanges(false)
+    setIsEditing(true)
+  }
+
   const handleSave = () => {
     updateDoc(docId, { content: draft, title: titleDraft })
+    setIsEditing(false)
     setHasChanges(false)
   }
 
   const handleDiscard = () => {
     setDraft(doc.content || '')
     setTitleDraft(doc.title || '')
+    setIsEditing(false)
     setHasChanges(false)
   }
 
@@ -60,24 +72,32 @@ export default function DocEditor({ docId }) {
   return (
     <div className="doc-editor">
       <div className="doc-editor-header">
-        <input
-          className="doc-editor-title-input"
-          value={titleDraft}
-          onChange={(e) => { setTitleDraft(e.target.value); setHasChanges(true) }}
-          placeholder="Document title"
-        />
+        {isEditing ? (
+          <input
+            className="doc-editor-title-input"
+            value={titleDraft}
+            onChange={(e) => { setTitleDraft(e.target.value); setHasChanges(true) }}
+            placeholder="Document title"
+            autoFocus
+          />
+        ) : (
+          <h1 className="doc-editor-title">{doc.title}</h1>
+        )}
+
         <div className="doc-editor-actions">
-          {hasChanges && (
+          {isEditing ? (
             <>
-              <button className="btn btn-primary btn-sm" onClick={handleSave}>
-                <Save size={14} />
-                Save
+              <button className="btn btn-primary btn-sm" onClick={handleSave} disabled={!hasChanges}>
+                <Save size={14} /> Save
               </button>
               <button className="btn btn-secondary btn-sm" onClick={handleDiscard}>
-                <X size={14} />
-                Discard
+                <X size={14} /> Discard
               </button>
             </>
+          ) : (
+            <button className="btn btn-secondary btn-sm" onClick={handleEdit}>
+              <Pencil size={14} /> Edit
+            </button>
           )}
           <button
             className="btn btn-ghost btn-sm"
@@ -93,9 +113,10 @@ export default function DocEditor({ docId }) {
       <div className="doc-editor-body">
         <WikiEditor
           key={docId}
-          value={draft}
+          value={isEditing ? draft : (doc.content || '')}
           onChange={(md) => { setDraft(md); setHasChanges(true) }}
           placeholder="Start writing your document…"
+          readOnly={!isEditing}
         />
       </div>
     </div>

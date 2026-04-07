@@ -615,21 +615,58 @@ input, textarea, select {
 .tool-category-header {
   display: flex;
   align-items: center;
-  cursor: pointer;
-  user-select: none;
+  gap: 4px;
   padding: 4px 0;
+  user-select: none;
 }
 
+/* Drag handle — grab cursor, never triggers collapse */
+.tool-category-drag-handle {
+  display: flex;
+  align-items: center;
+  color: var(--color-text-subtle);
+  cursor: grab;
+  padding: 2px 3px;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-fast), background var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.tool-category-drag-handle:hover {
+  color: var(--color-text-muted);
+  background: var(--color-surface-hover);
+}
+
+.tool-category-drag-handle:active {
+  cursor: grabbing;
+}
+
+/* Title button — only this collapses */
 .tool-category-title-wrap {
   display: flex;
   align-items: center;
   gap: 8px;
+  background: none;
+  border: none;
+  padding: 3px 6px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.tool-category-title-wrap:hover {
+  background: var(--color-surface-hover);
+}
+
+.tool-category-title-wrap:hover .tool-category-name {
+  color: var(--color-primary);
 }
 
 .tool-category-chevron {
   color: var(--color-text-muted);
   display: flex;
   align-items: center;
+  transition: color var(--transition-fast);
 }
 
 .tool-category-name {
@@ -638,6 +675,7 @@ input, textarea, select {
   text-transform: uppercase;
   letter-spacing: 0.7px;
   color: var(--color-text-muted);
+  transition: color var(--transition-fast);
 }
 
 .tool-category-count {
@@ -2088,3 +2126,91 @@ textarea {
   transition-duration: 150ms;
 }
 
+
+/* ══════════════════════════════════════════════════════════
+   MARKDOWN SYNTAX DECORATIONS  (Obsidian-style)
+══════════════════════════════════════════════════════════ */
+.md-syntax {
+  opacity: 0.38;
+  font-size: 0.85em;
+  font-family: 'SFMono-Regular', 'Consolas', monospace;
+  color: var(--color-primary);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ══════════════════════════════════════════════════════════
+   THEME PICKER  (Settings page)
+══════════════════════════════════════════════════════════ */
+.theme-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.theme-swatch {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  border-radius: var(--radius-md);
+  transition: transform var(--transition-fast);
+}
+
+.theme-swatch:hover {
+  transform: translateY(-2px);
+}
+
+.theme-swatch-preview {
+  width: 100%;
+  aspect-ratio: 4/3;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--color-border);
+  overflow: hidden;
+  display: flex;
+  transition: border-color var(--transition-fast);
+}
+
+.theme-swatch--active .theme-swatch-preview {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+.theme-swatch-sidebar {
+  width: 28%;
+  flex-shrink: 0;
+  border-right: 1px solid rgba(0,0,0,0.08);
+}
+
+.theme-swatch-content {
+  flex: 1;
+  padding: 6px 6px 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  justify-content: center;
+}
+
+.theme-swatch-bar {
+  height: 5px;
+  border-radius: 3px;
+  width: 70%;
+}
+
+.theme-swatch-bar--thin {
+  height: 3px;
+  width: 90%;
+}
+
+.theme-swatch-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
