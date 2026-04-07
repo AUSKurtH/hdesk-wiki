@@ -19,7 +19,7 @@ if (savedStore) {
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename="/hdesk-wiki">
       <App />
     </BrowserRouter>
   </React.StrictMode>,
