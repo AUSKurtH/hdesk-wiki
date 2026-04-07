@@ -12,6 +12,22 @@ const ICON_OPTIONS = [
   'Code', 'Terminal', 'Cpu', 'Server', 'Wifi', 'Phone', 'Headphones',
 ]
 
+const COLOR_PALETTE = [
+  { label: 'Default',   value: null },
+  { label: 'Blue',      value: '#2B6CB0' },
+  { label: 'Teal',      value: '#00A4A6' },
+  { label: 'Green',     value: '#2F855A' },
+  { label: 'Lime',      value: '#6B8E23' },
+  { label: 'Purple',    value: '#6B46C1' },
+  { label: 'Pink',      value: '#B83280' },
+  { label: 'Red',       value: '#C53030' },
+  { label: 'Orange',    value: '#C05621' },
+  { label: 'Yellow',    value: '#B7791F' },
+  { label: 'Slate',     value: '#4A5568' },
+  { label: 'Indigo',    value: '#3C366B' },
+  { label: 'Cyan',      value: '#086F83' },
+]
+
 function ToolModal({ tool, defaultCategory, onClose }) {
   const categories = useAppStore((s) => s.categories)
   const addTool = useAppStore((s) => s.addTool)
@@ -24,6 +40,7 @@ function ToolModal({ tool, defaultCategory, onClose }) {
     name: tool?.name || '',
     url: tool?.url || '',
     icon: tool?.icon || 'Globe',
+    color: tool?.color || null,
     category: tool?.category || defaultCategory || categories[0] || '',
     description: tool?.description || '',
   })
@@ -131,6 +148,27 @@ function ToolModal({ tool, defaultCategory, onClose }) {
                   )
                 })}
               </div>
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label className="label">Button Colour</label>
+            <div className="color-picker">
+              {COLOR_PALETTE.map(({ label, value }) => {
+                const isSelected = form.color === value
+                return (
+                  <button
+                    key={label}
+                    type="button"
+                    className={`color-swatch${isSelected ? ' color-swatch--selected' : ''}`}
+                    style={{ background: value || 'var(--color-primary-light)', border: value ? `2px solid ${value}` : '2px solid var(--color-border)' }}
+                    onClick={() => set('color', value)}
+                    title={label}
+                  >
+                    {isSelected && <span className="color-swatch-check">✓</span>}
+                  </button>
+                )
+              })}
             </div>
           </div>
 

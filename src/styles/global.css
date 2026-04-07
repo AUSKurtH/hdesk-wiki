@@ -1193,6 +1193,44 @@ input, textarea, select {
   color: #fff;
 }
 
+/* Colour picker swatches */
+.color-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.color-swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  position: relative;
+}
+
+.color-swatch:hover {
+  transform: scale(1.15);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.color-swatch--selected {
+  transform: scale(1.15);
+  box-shadow: 0 0 0 3px var(--color-bg), 0 0 0 5px rgba(0,0,0,0.3);
+}
+
+.color-swatch-check {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+  line-height: 1;
+}
+
 .icon-grid-sm .icon-btn {
   width: 30px;
   height: 30px;
@@ -1574,6 +1612,38 @@ input, textarea, select {
   color: var(--color-primary);
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+
+/* Tables */
+.wiki-editor .ProseMirror table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.8em 0;
+  font-size: 13.5px;
+  table-layout: fixed;
+}
+
+.wiki-editor .ProseMirror th,
+.wiki-editor .ProseMirror td {
+  border: 1px solid var(--color-border);
+  padding: 6px 12px;
+  text-align: left;
+  vertical-align: top;
+  position: relative;
+  min-width: 60px;
+}
+
+.wiki-editor .ProseMirror th {
+  background: var(--color-surface-hover);
+  font-weight: 600;
+}
+
+.wiki-editor .ProseMirror .selectedCell::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(43, 108, 176, 0.12);
+  pointer-events: none;
 }
 
 /* Selection highlight */

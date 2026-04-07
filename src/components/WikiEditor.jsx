@@ -2,18 +2,20 @@ import React, { useEffect, useRef } from 'react'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
+import { Table, TableRow, TableHeader, TableCell } from '@tiptap/extension-table'
 import { marked } from 'marked'
 import TurndownService from 'turndown'
+import { gfm } from 'turndown-plugin-gfm'
 import {
   Bold, Italic, Code, Strikethrough,
   Heading1, Heading2, Heading3,
-  List, ListOrdered, Quote, Minus,
+  List, ListOrdered, Quote, Minus, Table as TableIcon,
 } from 'lucide-react'
 
-// Configure marked
+// Configure marked with GFM tables
 marked.setOptions({ breaks: true, gfm: true })
 
-// Configure turndown
+// Configure turndown with GFM plugin for proper table support
 const td = new TurndownService({
   headingStyle: 'atx',
   hr: '---',
@@ -21,7 +23,7 @@ const td = new TurndownService({
   codeBlockStyle: 'fenced',
   fence: '```',
 })
-td.keep(['table', 'thead', 'tbody', 'tr', 'th', 'td'])
+td.use(gfm)
 
 function markdownToHtml(md) {
   if (!md) return ''
@@ -59,6 +61,10 @@ export default function WikiEditor({ value = '', onChange, placeholder = 'Start 
         placeholder,
         emptyEditorClass: 'wiki-editor-empty',
       }),
+      Table.configure({ resizable: false }),
+      TableRow,
+      TableHeader,
+      TableCell,
     ],
     editable: !readOnly,
     content: markdownToHtml(value),
@@ -75,10 +81,7 @@ export default function WikiEditor({ value = '', onChange, placeholder = 'Start 
     if (!editor) return
     if (value !== lastValueRef.current) {
       lastValueRef.current = value
-      const { from, to } = editor.state.selection
       editor.commands.setContent(markdownToHtml(value), false)
-      // Restore cursor if possible
-      try { editor.commands.setTextSelection({ from, to }) } catch {}
     }
   }, [value, editor])
 
@@ -88,8 +91,6 @@ export default function WikiEditor({ value = '', onChange, placeholder = 'Start 
   }, [readOnly, editor])
 
   if (!editor) return null
-
-  const can = editor.can().chain().focus()
 
   return (
     <div className={`wiki-editor${readOnly ? ' wiki-editor--readonly' : ''}`}>
@@ -114,6 +115,21 @@ export default function WikiEditor({ value = '', onChange, placeholder = 'Start 
             <ToolbarButton onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive('orderedList')} title="Numbered List"><ListOrdered size={15} /></ToolbarButton>
             <ToolbarButton onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive('blockquote')} title="Blockquote"><Quote size={15} /></ToolbarButton>
             <ToolbarButton onClick={() => editor.chain().focus().setHorizontalRule().run()} active={false} title="Horizontal Rule"><Minus size={15} /></ToolbarButton>
+          </div>
+          <div className="wiki-toolbar-divider" />
+          <div className="wiki-toolbar-group">
+            <ToolbarButton
+              onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
+              active={editor.isActive('table')}
+              title="Insert Table"
+            ><TableIcon size={15} /></ToolbarButton>
+            {editor.isActive('table') && (
+              <>
+                <ToolbarButton onClick={() => editor.chain().focus().addColumnAfter().run()} active={false} title="Add Column"><span style={{ fontSize: 11, fontWeight: 600 }}>+Col</span></ToolbarButton>
+                <ToolbarButton onClick={() => editor.chain().focus().addRowAfter().run()} active={false} title="Add Row"><span style={{ fontSize: 11, fontWeight: 600 }}>+Row</span></ToolbarButton>
+                <ToolbarButton onClick={() => editor.chain().focus().deleteTable().run()} active={false} title="Delete Table"><span style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-danger)' }}>Del</span></ToolbarButton>
+              </>
+            )}
           </div>
         </div>
       )}
