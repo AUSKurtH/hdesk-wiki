@@ -676,6 +676,12 @@ input, textarea, select {
   transform: translateY(-2px);
 }
 
+/* Coloured card: hover darkens the tint slightly */
+.tool-card--colored:hover {
+  border-color: var(--card-color, var(--color-primary));
+  background: color-mix(in srgb, var(--card-color, var(--color-primary)) 22%, transparent) !important;
+}
+
 .tool-card:active {
   transform: translateY(0);
 }
@@ -860,6 +866,13 @@ input, textarea, select {
 
 .tool-card--selected .tool-card-icon {
   background: rgba(43, 108, 176, 0.18);
+}
+
+/* Coloured card selected: use the card's own colour for the ring */
+.tool-card--colored.tool-card--selected {
+  border-color: var(--card-color) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--card-color) 30%, transparent), var(--shadow-card-hover) !important;
+  background: color-mix(in srgb, var(--card-color) 28%, transparent) !important;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -1399,6 +1412,68 @@ input, textarea, select {
   color: var(--color-primary);
 }
 
+.wiki-toolbar-btn--danger {
+  color: var(--color-danger);
+}
+
+.wiki-toolbar-btn--danger:hover {
+  background: rgba(229, 62, 62, 0.1);
+  color: #C53030;
+}
+
+.wiki-toolbar-label {
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+  letter-spacing: -0.02em;
+}
+
+/* Table grid picker */
+.table-picker {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 200;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.table-picker-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-align: center;
+  min-height: 16px;
+}
+
+.table-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 18px);
+  grid-template-rows: repeat(6, 18px);
+  gap: 2px;
+}
+
+.table-picker-cell {
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--color-border);
+  border-radius: 2px;
+  background: var(--color-surface-hover);
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.table-picker-cell--active {
+  background: var(--color-primary-light);
+  border-color: var(--color-primary);
+}
+
 /* Bubble menu */
 .wiki-bubble-menu {
   display: flex;
@@ -1644,6 +1719,33 @@ input, textarea, select {
   inset: 0;
   background: rgba(43, 108, 176, 0.12);
   pointer-events: none;
+}
+
+/* Column resize handle */
+.wiki-editor .ProseMirror .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--color-primary);
+  opacity: 0;
+  cursor: col-resize;
+  transition: opacity var(--transition-fast);
+  z-index: 20;
+}
+
+.wiki-editor .ProseMirror:hover .column-resize-handle {
+  opacity: 0.4;
+}
+
+.wiki-editor .ProseMirror .column-resize-handle:hover,
+.wiki-editor .ProseMirror .resize-cursor .column-resize-handle {
+  opacity: 1;
+}
+
+.wiki-editor .ProseMirror.resize-cursor {
+  cursor: col-resize;
 }
 
 /* Selection highlight */

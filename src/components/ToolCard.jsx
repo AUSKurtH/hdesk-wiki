@@ -1,26 +1,21 @@
 import React from 'react'
 import * as LucideIcons from 'lucide-react'
 
-// Derive a lighter tint from a hex colour for the icon background
-function hexToRgb(hex) {
-  const h = hex.replace('#', '')
-  const r = parseInt(h.substring(0, 2), 16)
-  const g = parseInt(h.substring(2, 4), 16)
-  const b = parseInt(h.substring(4, 6), 16)
-  return { r, g, b }
-}
-
 export default function ToolCard({ tool, onSelect, onEdit, selected }) {
   const IconComponent = LucideIcons[tool.icon] || LucideIcons.Globe
   const color = tool.color || null
 
-  const iconStyle = color
-    ? { background: `${color}22`, color }
-    : {}
+  // Build inline styles only when a custom colour is set
+  const cardStyle = color ? {
+    '--card-color': color,
+    background: `${color}18`,
+    borderColor: `${color}55`,
+  } : {}
 
-  const selectedStyle = color
-    ? { borderColor: color, boxShadow: `0 0 0 3px ${color}33, var(--shadow-card-hover)`, background: `${color}11` }
-    : {}
+  const iconStyle = color ? {
+    background: `${color}30`,
+    color,
+  } : {}
 
   const handleClick = (e) => {
     if (e.target.closest('.tool-card-edit')) return
@@ -29,8 +24,8 @@ export default function ToolCard({ tool, onSelect, onEdit, selected }) {
 
   return (
     <div
-      className={`tool-card card${selected ? ' tool-card--selected' : ''}`}
-      style={selected && color ? selectedStyle : {}}
+      className={`tool-card card${selected ? ' tool-card--selected' : ''}${color ? ' tool-card--colored' : ''}`}
+      style={cardStyle}
       onClick={handleClick}
       role="button"
       tabIndex={0}
