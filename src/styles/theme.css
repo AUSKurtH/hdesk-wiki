@@ -1,0 +1,74 @@
+:root,
+[data-theme="light"] {
+  --color-primary: #2B6CB0;
+  --color-primary-hover: #2563EB;
+  --color-primary-light: #EBF4FF;
+  --color-secondary: #00A4A6;
+  --color-secondary-hover: #008587;
+
+  --color-bg: #F8FAFC;
+  --color-sidebar: #EBF4FF;
+  --color-surface: #FFFFFF;
+  --color-surface-hover: #F1F5F9;
+  --color-surface-alt: #F8FAFC;
+
+  --color-text: #1A202C;
+  --color-text-muted: #64748B;
+  --color-text-subtle: #94A3B8;
+
+  --color-border: #E2E8F0;
+  --color-border-focus: #2B6CB0;
+
+  --color-success: #16A34A;
+  --color-warning: #D97706;
+  --color-danger: #DC2626;
+  --color-danger-hover: #B91C1C;
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-card-hover: 0 8px 25px -5px rgba(43, 108, 176, 0.25);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  --transition-fast: 150ms ease;
+  --transition-base: 200ms ease;
+  --transition-slow: 300ms ease;
+
+  --sidebar-width: 260px;
+  --header-height: 64px;
+}
+
+[data-theme="dark"] {
+  --color-primary: #4299E1;
+  --color-primary-hover: #63B3ED;
+  --color-primary-light: rgba(66, 153, 225, 0.15);
+  --color-secondary: #00C9CB;
+  --color-secondary-hover: #00A4A6;
+
+  --color-bg: #1A202C;
+  --color-sidebar: #2D3748;
+  --color-surface: #2D3748;
+  --color-surface-hover: #374151;
+  --color-surface-alt: #1A202C;
+
+  --color-text: #F7FAFC;
+  --color-text-muted: #A0AEC0;
+  --color-text-subtle: #718096;
+
+  --color-border: #4A5568;
+  --color-border-focus: #4299E1;
+
+  --color-success: #22C55E;
+  --color-warning: #F59E0B;
+  --color-danger: #F87171;
+  --color-danger-hover: #FCA5A5;
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+  --shadow-card-hover: 0 8px 25px -5px rgba(66, 153, 225, 0.3);
+}

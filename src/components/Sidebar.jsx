@@ -1,0 +1,89 @@
+import React from 'react'
+import { NavLink, useLocation } from 'react-router-dom'
+import { LayoutDashboard, BookOpen, Settings, ChevronRight } from 'lucide-react'
+import DocTree from './DocTree.jsx'
+
+export default function Sidebar({ collapsed, onToggle }) {
+  const location = useLocation()
+  const isDocsSection = location.pathname.startsWith('/docs')
+
+  return (
+    <aside className={`sidebar ${collapsed ? 'sidebar-collapsed' : ''}`}>
+      {/* Brand */}
+      <div className="sidebar-brand">
+        <div className="sidebar-brand-icon">
+          <LayoutDashboard size={20} />
+        </div>
+        {!collapsed && (
+          <div className="sidebar-brand-text">
+            <span className="sidebar-brand-name">Helpdesk</span>
+            <span className="sidebar-brand-sub">Dashboard</span>
+          </div>
+        )}
+        <button
+          className="sidebar-collapse-btn"
+          onClick={onToggle}
+          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          <ChevronRight
+            size={16}
+            style={{
+              transform: collapsed ? 'rotate(0deg)' : 'rotate(180deg)',
+              transition: 'transform 200ms ease',
+            }}
+          />
+        </button>
+      </div>
+
+      {/* Nav */}
+      <nav className="sidebar-nav">
+        <NavLink
+          to="/dashboard"
+          className={({ isActive }) =>
+            `sidebar-nav-item ${isActive ? 'active' : ''}`
+          }
+          title="Dashboard"
+        >
+          <LayoutDashboard size={18} />
+          {!collapsed && <span>Dashboard</span>}
+        </NavLink>
+
+        <NavLink
+          to="/docs"
+          className={({ isActive }) =>
+            `sidebar-nav-item ${isActive || isDocsSection ? 'active' : ''}`
+          }
+          title="Documentation"
+        >
+          <BookOpen size={18} />
+          {!collapsed && <span>Docs</span>}
+        </NavLink>
+
+        <NavLink
+          to="/settings"
+          className={({ isActive }) =>
+            `sidebar-nav-item ${isActive ? 'active' : ''}`
+          }
+          title="Settings"
+        >
+          <Settings size={18} />
+          {!collapsed && <span>Settings</span>}
+        </NavLink>
+      </nav>
+
+      {/* Doc tree shown when in docs section */}
+      {!collapsed && isDocsSection && (
+        <div className="sidebar-doc-tree">
+          <DocTree />
+        </div>
+      )}
+
+      {/* Footer */}
+      {!collapsed && (
+        <div className="sidebar-footer">
+          <span className="sidebar-footer-text">Helpdesk Wiki v1.0</span>
+        </div>
+      )}
+    </aside>
+  )
+}
