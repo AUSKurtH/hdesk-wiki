@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
@@ -49,20 +50,36 @@ function ToolbarButton({ onClick, active, title, children, danger }) {
 const GRID_ROWS = 6
 const GRID_COLS = 8
 
-function TableGridPicker({ onInsert, onClose }) {
+function TableGridPicker({ anchorRef, onInsert, onClose }) {
   const [hover, setHover] = useState({ r: 0, c: 0 })
-  const ref = useRef()
+  const pickerRef = useRef()
+
+  // Position relative to the anchor button using fixed coords
+  const [pos, setPos] = useState({ top: 0, left: 0 })
+  useEffect(() => {
+    if (anchorRef.current) {
+      const rect = anchorRef.current.getBoundingClientRect()
+      setPos({ top: rect.bottom + 6, left: rect.left })
+    }
+  }, [anchorRef])
 
   useEffect(() => {
-    function handleClick(e) {
-      if (ref.current && !ref.current.contains(e.target)) onClose()
+    function handleMouseDown(e) {
+      if (
+        pickerRef.current && !pickerRef.current.contains(e.target) &&
+        anchorRef.current && !anchorRef.current.contains(e.target)
+      ) onClose()
     }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [onClose])
+    document.addEventListener('mousedown', handleMouseDown)
+    return () => document.removeEventListener('mousedown', handleMouseDown)
+  }, [onClose, anchorRef])
 
-  return (
-    <div className="table-picker" ref={ref}>
+  return createPortal(
+    <div
+      className="table-picker"
+      ref={pickerRef}
+      style={{ position: 'fixed', top: pos.top, left: pos.left, zIndex: 9999 }}
+    >
       <div className="table-picker-label">
         {hover.r > 0 && hover.c > 0 ? `${hover.c} × ${hover.r}` : 'Insert table'}
       </div>
@@ -75,15 +92,14 @@ function TableGridPicker({ onInsert, onClose }) {
               onMouseEnter={() => setHover({ r: r + 1, c: c + 1 })}
               onMouseDown={(e) => {
                 e.preventDefault()
-                if (hover.r > 0 && hover.c > 0) {
-                  onInsert(hover.r, hover.c)
-                }
+                if (hover.r > 0 && hover.c > 0) onInsert(hover.r, hover.c)
               }}
             />
           ))
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 
@@ -91,6 +107,7 @@ export default function WikiEditor({ value = '', onChange, placeholder = 'Start 
   const onChangeRef = useRef(onChange)
   onChangeRef.current = onChange
   const [showTablePicker, setShowTablePicker] = useState(false)
+  const tableButtonRef = useRef()
 
   const editor = useEditor({
     extensions: [
@@ -159,18 +176,21 @@ export default function WikiEditor({ value = '', onChange, placeholder = 'Start 
           </div>
           <div className="wiki-toolbar-divider" />
           {/* Table controls */}
-          <div className="wiki-toolbar-group" style={{ position: 'relative' }}>
+          <div className="wiki-toolbar-group">
             {!inTable ? (
               <>
-                <ToolbarButton
-                  onClick={() => setShowTablePicker((v) => !v)}
-                  active={showTablePicker}
+                <button
+                  type="button"
+                  ref={tableButtonRef}
+                  onMouseDown={(e) => { e.preventDefault(); setShowTablePicker((v) => !v) }}
+                  className={`wiki-toolbar-btn${showTablePicker ? ' wiki-toolbar-btn--active' : ''}`}
                   title="Insert Table"
                 >
                   <TableIcon size={15} />
-                </ToolbarButton>
+                </button>
                 {showTablePicker && (
                   <TableGridPicker
+                    anchorRef={tableButtonRef}
                     onInsert={handleInsertTable}
                     onClose={() => setShowTablePicker(false)}
                   />
