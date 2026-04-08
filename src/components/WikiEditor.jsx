@@ -15,7 +15,7 @@ import {
   Bold, Italic, Code, Strikethrough,
   Heading1, Heading2, Heading3,
   List, ListOrdered, Quote, Minus, Table as TableIcon,
-  Link2, Palette,
+  Link2, Palette, Image as ImageIcon,
 } from 'lucide-react'
 
 marked.setOptions({ breaks: true, gfm: true })
@@ -186,6 +186,7 @@ export default function WikiEditor({ value = '', onChange, placeholder = 'Start 
   const [showColorPicker, setShowColorPicker] = useState(false)
   const tableButtonRef = useRef()
   const colorButtonRef = useRef()
+  const imageInputRef = useRef()
 
   const editor = useEditor({
     extensions: [
@@ -248,6 +249,21 @@ export default function WikiEditor({ value = '', onChange, placeholder = 'Start 
   const handleInsertTable = (rows, cols) => {
     editor.chain().focus().insertTable({ rows, cols, withHeaderRow: true }).run()
     setShowTablePicker(false)
+  }
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result
+      if (dataUrl) {
+        editor.chain().focus().insertContent(`<img src="${dataUrl}" style="max-width: 100%; height: auto;" alt="Image" />`).run()
+      }
+    }
+    reader.readAsDataURL(file)
+    e.target.value = '' // Reset input
   }
 
   return (
@@ -313,7 +329,7 @@ export default function WikiEditor({ value = '', onChange, placeholder = 'Start 
             )}
           </div>
           <div className="wiki-toolbar-divider" />
-          {/* Link */}
+          {/* Link & Image */}
           <div className="wiki-toolbar-group">
             <ToolbarButton
               onClick={() => {
@@ -336,6 +352,19 @@ export default function WikiEditor({ value = '', onChange, placeholder = 'Start 
             >
               <Link2 size={15} />
             </ToolbarButton>
+            <ToolbarButton
+              onClick={() => imageInputRef.current?.click()}
+              title="Insert Image"
+            >
+              <ImageIcon size={15} />
+            </ToolbarButton>
+            <input
+              ref={imageInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              style={{ display: 'none' }}
+            />
           </div>
           <div className="wiki-toolbar-divider" />
           {/* Text colour — 13-colour palette */}
