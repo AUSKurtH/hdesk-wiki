@@ -5,8 +5,6 @@
 
 import React, { useState, useMemo, useRef } from 'react'
 import { ChevronDown, ChevronRight, FileText, FolderOpen, Search, Edit2, Plus, Trash2, Image as ImageIcon } from 'lucide-react'
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
 import MDEditor from '@uiw/react-md-editor'
 import '@uiw/react-md-editor/markdown-editor.css'
 import '@uiw/react-markdown-preview/markdown.css'
@@ -213,38 +211,38 @@ export default function WikiPage() {
             </div>
 
             <div className="wiki-body">
-              {isEditing ? (
-                <div
-                  className="wiki-md-editor-wrapper"
-                  data-color-mode="auto"
-                  style={{
-                    '--md-color-bg': 'var(--color-surface)',
-                    '--md-color-text': 'var(--color-text)',
-                    '--md-color-border': 'var(--color-border)',
-                  }}
-                >
-                  <MDEditor
-                    value={selectedDoc.content || ''}
-                    onChange={(val) => {
+              <div
+                className="wiki-md-editor-wrapper"
+                data-color-mode="auto"
+                style={{
+                  '--md-color-bg': 'var(--color-surface)',
+                  '--md-color-text': 'var(--color-text)',
+                  '--md-color-border': 'var(--color-border)',
+                }}
+              >
+                <MDEditor
+                  value={selectedDoc.content || ''}
+                  onChange={(val) => {
+                    if (isEditing) {
                       useAppStore.getState().updateDoc(selectedDocId, { content: val || '' })
-                    }}
-                    preview="edit"
-                    hideToolbar={false}
-                    visibleDragbar={false}
-                    height={600}
-                    className="wiki-md-editor"
-                    textareaProps={{
-                      placeholder: 'Write your documentation here...',
-                    }}
-                  />
-                </div>
-              ) : (
-                <div className="wiki-markdown">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {selectedDoc.content || '# No content yet'}
-                  </ReactMarkdown>
-                </div>
-              )}
+                    }
+                  }}
+                  preview={isEditing ? 'edit' : 'preview'}
+                  hideToolbar={!isEditing}
+                  visibleDragbar={false}
+                  height={isEditing ? 600 : 'auto'}
+                  className="wiki-md-editor"
+                  textareaProps={{
+                    placeholder: 'Write your documentation here...',
+                  }}
+                  visibleDragbar={false}
+                  enableScroll={true}
+                  textareaProps={{
+                    disabled: !isEditing,
+                    placeholder: 'Write your documentation here...',
+                  }}
+                />
+              </div>
             </div>
           </div>
         )}
