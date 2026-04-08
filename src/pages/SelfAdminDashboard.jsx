@@ -322,6 +322,7 @@ export default function SelfAdminDashboard() {
   const [modalCategory, setModalCategory] = useState(null)
   const [showModal, setShowModal] = useState(false)
   const [useRowLayout, setUseRowLayout] = useState(false)
+  const [selectedRowForAddingTool, setSelectedRowForAddingTool] = useState(null)
 
   const tools = useAppStore((s) => s.selfAdminTools)
   const rows = useAppStore((s) => s.selfAdminRows)
@@ -353,6 +354,13 @@ export default function SelfAdminDashboard() {
   const handleAddRow = () => {
     addSelfAdminRow(`Row ${rows.length + 1}`)
     setUseRowLayout(true)
+  }
+
+  const handleAddToolToRow = (rowId) => {
+    setSelectedRowForAddingTool(rowId)
+    setModalTool(null)
+    setModalCategory(rowId) // Use row ID as category
+    setShowModal(true)
   }
 
   // Check if we should use row layout (if rows exist)
@@ -405,25 +413,84 @@ export default function SelfAdminDashboard() {
         <div className="dashboard-left">
           {displayMode === 'rows' && hasRows ? (
             <div className="selfadmin-rows">
-              {rows.map((row) => (
-                <div key={row.id} className="selfadmin-row-container">
-                  <div className="selfadmin-row-header">
-                    <h3 className="selfadmin-row-title">{row.name}</h3>
-                    <button
-                      className="btn btn-ghost btn-sm"
-                      onClick={() => handleDeleteRow(row.id)}
-                      title="Delete row"
-                    >
-                      <Trash2 size={14} />
-                    </button>
+              {rows.map((row) => {
+                const rowTools = tools.filter((t) => t.category === row.id)
+                return (
+                  <div key={row.id} className="selfadmin-row-container">
+                    <div className="selfadmin-row-header">
+                      <h3 className="selfadmin-row-title">{row.name}</h3>
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
+                          {rowTools.length} tools
+                        </span>
+                        <button
+                          className="btn btn-primary btn-sm"
+                          onClick={() => handleAddToolToRow(row.id)}
+                          title="Add tool to this row"
+                        >
+                          <Plus size={14} />
+                        </button>
+                        <button
+                          className="btn btn-ghost btn-sm"
+                          onClick={() => handleDeleteRow(row.id)}
+                          title="Delete row"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="selfadmin-row-content">
+                      {rowTools.length === 0 ? (
+                        <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', padding: '40px 20px' }}>
+                          No tools in this row. Click the + button to add one.
+                        </p>
+                      ) : (
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px', padding: '12px' }}>
+                          {rowTools.map((tool) => {
+                            const ToolIcon = LucideIcons[tool.icon] || LucideIcons.Globe
+                            const cardStyle = tool.color ? {
+                              background: `${tool.color}18`,
+                              borderColor: `${tool.color}55`,
+                            } : {}
+                            const iconStyle = tool.color ? {
+                              background: `${tool.color}30`,
+                              color: tool.color,
+                            } : {}
+                            return (
+                              <div
+                                key={tool.id}
+                                className="tool-card card"
+                                style={cardStyle}
+                                onClick={() => setSelectedTool(tool)}
+                              >
+                                <div className="tool-card-icon" style={iconStyle}>
+                                  <ToolIcon size={24} strokeWidth={1.5} />
+                                </div>
+                                <div className="tool-card-body">
+                                  <span className="tool-card-name">{tool.name}</span>
+                                  {tool.description && (
+                                    <span className="tool-card-desc">{tool.description}</span>
+                                  )}
+                                </div>
+                                <button
+                                  className="tool-card-edit btn btn-ghost btn-sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleEditTool(tool)
+                                  }}
+                                  title="Edit tool"
+                                >
+                                  <LucideIcons.Pencil size={13} />
+                                </button>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div className="selfadmin-row-content">
-                    <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', padding: '40px 20px' }}>
-                      Add tools to this row from the "Add Tool" button above
-                    </p>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           ) : (
             <SelfAdminToolGrid

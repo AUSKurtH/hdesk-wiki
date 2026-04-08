@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Plus, X, Pencil, GripVertical, Trash2 } from 'lucide-react'
 import useAppStore from '../store/useAppStore.js'
-import QRGPanel from '../components/QRGPanel.jsx'
+import TaskDetailsPanel from '../components/TaskDetailsPanel.jsx'
 import * as LucideIcons from 'lucide-react'
 import {
   DndContext,
@@ -355,12 +355,12 @@ export default function WorkBoard() {
   const [modalColumnId, setModalColumnId] = useState(null)
   const [showModal, setShowModal] = useState(false)
   const [selectedTask, setSelectedTask] = useState(null)
-  const [rightPanelWidth, setRightPanelWidth] = useState(350) // 50% of typical 700px container
+  const [containerWidth, setContainerWidth] = useState(0)
+  const [editingColumnId, setEditingColumnId] = useState(null)
+  const [editingColumnName, setEditingColumnName] = useState('')
   const dividerRef = useRef(null)
   const containerRef = useRef(null)
   const [isDraggingDivider, setIsDraggingDivider] = useState(false)
-  const [editingColumnId, setEditingColumnId] = useState(null)
-  const [editingColumnName, setEditingColumnName] = useState('')
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
@@ -373,6 +373,14 @@ export default function WorkBoard() {
       addWorkBoardColumn('Work')
     }
   }, [])
+
+  // Calculate container width for 50/50 split
+  useEffect(() => {
+    if (containerRef.current) {
+      const width = containerRef.current.getBoundingClientRect().width
+      setContainerWidth(width)
+    }
+  }, [containerRef])
 
   const handleAddTask = (columnId) => {
     setModalColumnId(columnId)
@@ -419,6 +427,9 @@ export default function WorkBoard() {
     setIsDraggingDivider(true)
   }
 
+  // Compute the right panel width (50% of container by default)
+  const rightPanelWidth = Math.max(200, Math.min(containerWidth / 2, containerWidth - 250))
+
   useEffect(() => {
     const handleMouseMove = (e) => {
       if (!isDraggingDivider || !containerRef.current) return
@@ -429,7 +440,7 @@ export default function WorkBoard() {
       const maxWidth = containerRect.width - 250
 
       if (newWidth >= minWidth && newWidth <= maxWidth) {
-        setRightPanelWidth(newWidth)
+        setContainerWidth(containerRect.width - (containerRect.width - newWidth))
       }
     }
 
@@ -446,7 +457,7 @@ export default function WorkBoard() {
       document.removeEventListener('mousemove', handleMouseMove)
       document.removeEventListener('mouseup', handleMouseUp)
     }
-  }, [isDraggingDivider])
+  }, [isDraggingDivider, containerWidth])
 
   const liveSelectedTask = selectedTask
     ? tasks.find((t) => t.id === selectedTask.id) || null
@@ -524,7 +535,7 @@ export default function WorkBoard() {
           />
 
           <div className="workboard-right" style={{ flex: `0 0 ${rightPanelWidth}px` }}>
-            <QRGPanel tool={liveSelectedTask} label="Task Details" />
+            <TaskDetailsPanel task={liveSelectedTask} />
           </div>
         </div>
       </div>

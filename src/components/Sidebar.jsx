@@ -53,14 +53,14 @@ export default function Sidebar({ collapsed, onToggle }) {
         </NavLink>
 
         <NavLink
-          to="/self-admin"
+          to="/docs"
           className={({ isActive }) =>
-            `sidebar-nav-item ${isActive ? 'active' : ''}`
+            `sidebar-nav-item ${isActive || isDocsSection ? 'active' : ''}`
           }
-          title="Self Administration"
+          title="Documentation"
         >
-          <User size={18} />
-          {!collapsed && <span>Self Admin</span>}
+          <BookOpen size={18} />
+          {!collapsed && <span>Documentation</span>}
         </NavLink>
 
         <NavLink
@@ -75,14 +75,14 @@ export default function Sidebar({ collapsed, onToggle }) {
         </NavLink>
 
         <NavLink
-          to="/docs"
+          to="/self-admin"
           className={({ isActive }) =>
-            `sidebar-nav-item ${isActive || isDocsSection ? 'active' : ''}`
+            `sidebar-nav-item ${isActive ? 'active' : ''}`
           }
-          title="Documentation"
+          title="Self Administration"
         >
-          <BookOpen size={18} />
-          {!collapsed && <span>Documentation</span>}
+          <User size={18} />
+          {!collapsed && <span>Self Admin</span>}
         </NavLink>
 
         <NavLink
