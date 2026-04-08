@@ -215,6 +215,31 @@ export default function WikiEditor({ value = '', onChange, placeholder = 'Start 
         }
         return false
       },
+      handlePaste(view, event) {
+        // Handle image paste
+        if (!readOnly) {
+          const items = event.clipboardData?.items
+          if (items) {
+            for (const item of items) {
+              if (item.type.startsWith('image/')) {
+                const file = item.getAsFile()
+                if (file) {
+                  const reader = new FileReader()
+                  reader.onload = (ev) => {
+                    const dataUrl = ev.target?.result
+                    if (dataUrl && editor?.isActive) {
+                      editor.chain().focus().insertContent(`<img src="${dataUrl}" style="max-width: 100%; height: auto;" alt="Pasted image" />`).run()
+                    }
+                  }
+                  reader.readAsDataURL(file)
+                  return true
+                }
+              }
+            }
+          }
+        }
+        return false
+      },
     },
     onUpdate({ editor }) {
       // Flag this as an internal change so the useEffect below won't reset cursor
