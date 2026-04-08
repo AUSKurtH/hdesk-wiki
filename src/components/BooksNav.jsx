@@ -225,6 +225,7 @@ export default function BooksNav({ currentBookId, currentChapterId, onSelectChap
     createChapter,
     deleteBook,
     loadChapters,
+    reorderChapters,
   } = useBooksStore()
 
   const [expandedBooks, setExpandedBooks] = useState({})
@@ -286,24 +287,21 @@ export default function BooksNav({ currentBookId, currentChapterId, onSelectChap
 
     if (!over || active.id === over.id) return
 
-    // Handle book reordering
-    const activeBookIndex = books.findIndex(b => b.id === active.id)
-    const overBookIndex = books.findIndex(b => b.id === over.id)
-
-    if (activeBookIndex >= 0 && overBookIndex >= 0) {
-      // Reorder books in store (would need to add to useBooksStore)
-      // For now, just reorder locally for visual feedback
-      return
-    }
-
     // Handle chapter reordering within a book
     for (const bookId in chapters) {
-      const chapterIndex = chapters[bookId].findIndex(c => c.id === active.id)
-      const overIndex = chapters[bookId].findIndex(c => c.id === over.id)
+      const bookChapters = chapters[bookId] || []
+      const chapterIndex = bookChapters.findIndex(c => c.id === active.id)
+      const overIndex = bookChapters.findIndex(c => c.id === over.id)
 
       if (chapterIndex >= 0 && overIndex >= 0) {
-        // Reorder chapters (would need to update order in storage)
-        // For now, just provide visual feedback
+        // Reorder chapters
+        const orderedIds = bookChapters.map(c => c.id)
+        const newOrder = arrayMove(orderedIds, chapterIndex, overIndex)
+
+        // Persist the new order
+        reorderChapters(bookId, newOrder).catch(err => {
+          console.error('Failed to reorder chapters:', err)
+        })
         return
       }
     }
