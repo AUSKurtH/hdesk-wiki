@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { Plus, X, Pencil, GripVertical, Trash2 } from 'lucide-react'
+import { Plus, X, Pencil, GripVertical, Trash2, Settings } from 'lucide-react'
 import useAppStore from '../store/useAppStore.js'
 import TaskDetailsPanel from '../components/TaskDetailsPanel.jsx'
 import * as LucideIcons from 'lucide-react'
@@ -272,8 +272,51 @@ function SortableWorkBoardTask({ task, onEdit, onSelect, onDelete }) {
   )
 }
 
-function WorkBoardColumn({ column, tasks, onAddTask, onEditTask, onSelectTask, onRenameColumn, onDeleteColumn, isEditingName, editingName, onNameChange, onNameSave, onDeleteTask }) {
+function ColumnColorPicker({ column, onSelectColor, onClose }) {
+  return (
+    <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="modal" style={{ maxWidth: '400px' }}>
+        <div className="modal-header">
+          <h2 className="modal-title">Column Color</h2>
+          <button className="btn btn-ghost btn-sm" onClick={onClose}>
+            <X size={16} />
+          </button>
+        </div>
+        <div className="modal-body">
+          <div className="color-picker" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px' }}>
+            {COLOR_PALETTE.map(({ label, value }) => {
+              const isSelected = column.color === value
+              return (
+                <button
+                  key={label}
+                  className={`color-swatch${isSelected ? ' color-swatch--selected' : ''}`}
+                  style={{
+                    background: value || 'var(--color-primary-light)',
+                    border: value ? `2px solid ${value}` : '2px solid var(--color-border)',
+                    padding: '12px',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                  }}
+                  onClick={() => {
+                    onSelectColor(value)
+                    onClose()
+                  }}
+                  title={label}
+                >
+                  {isSelected && <span className="color-swatch-check">✓</span>}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function WorkBoardColumn({ column, tasks, onAddTask, onEditTask, onSelectTask, onRenameColumn, onDeleteColumn, isEditingName, editingName, onNameChange, onNameSave, onDeleteTask, onSetColumnColor }) {
   const columnTasks = tasks.filter((t) => t.columnId === column.id).sort((a, b) => (a.position || 0) - (b.position || 0))
+  const [showColorPicker, setShowColorPicker] = useState(false)
 
   const handleDeleteColumn = () => {
     if (window.confirm(`Delete column "${column.name}"? All tasks in this column will be deleted.`)) {
@@ -281,9 +324,15 @@ function WorkBoardColumn({ column, tasks, onAddTask, onEditTask, onSelectTask, o
     }
   }
 
+  const columnHeaderStyle = column.color ? {
+    borderLeftColor: column.color,
+    borderLeftWidth: '4px',
+    paddingLeft: 'calc(12px - 4px)',
+  } : {}
+
   return (
     <div className="workboard-column">
-      <div className="workboard-column-header">
+      <div className="workboard-column-header" style={columnHeaderStyle}>
         {isEditingName ? (
           <input
             type="text"
@@ -308,6 +357,13 @@ function WorkBoardColumn({ column, tasks, onAddTask, onEditTask, onSelectTask, o
         )}
         <div className="workboard-column-header-actions">
           <span className="workboard-column-count">{columnTasks.length}</span>
+          <button
+            className="btn btn-ghost btn-sm"
+            onClick={() => setShowColorPicker(true)}
+            title="Column color"
+          >
+            <Settings size={14} />
+          </button>
           <button
             className="btn btn-ghost btn-sm"
             onClick={handleDeleteColumn}
@@ -338,6 +394,14 @@ function WorkBoardColumn({ column, tasks, onAddTask, onEditTask, onSelectTask, o
           </button>
         </div>
       </SortableContext>
+
+      {showColorPicker && (
+        <ColumnColorPicker
+          column={column}
+          onSelectColor={(color) => onSetColumnColor(column.id, color)}
+          onClose={() => setShowColorPicker(false)}
+        />
+      )}
     </div>
   )
 }
@@ -350,6 +414,7 @@ export default function WorkBoard() {
   const deleteWorkBoardColumn = useAppStore((s) => s.deleteWorkBoardColumn)
   const renameWorkBoardColumn = useAppStore((s) => s.renameWorkBoardColumn)
   const deleteWorkBoardTool = useAppStore((s) => s.deleteWorkBoardTool)
+  const setWorkBoardColumnColor = useAppStore((s) => s.setWorkBoardColumnColor)
 
   const [modalTask, setModalTask] = useState(null)
   const [modalColumnId, setModalColumnId] = useState(null)
@@ -525,6 +590,7 @@ export default function WorkBoard() {
                   onNameChange={setEditingColumnName}
                   onNameSave={handleSaveColumnName}
                   onDeleteTask={deleteWorkBoardTool}
+                  onSetColumnColor={setWorkBoardColumnColor}
                 />
               ))}
             </div>

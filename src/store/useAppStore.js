@@ -369,6 +369,9 @@ const useAppStore = create(
       renameWorkBoardColumn: (colId, newName) => set((state) => ({
         workBoardColumns: state.workBoardColumns.map((c) => (c.id === colId ? { ...c, name: newName } : c)),
       })),
+      setWorkBoardColumnColor: (colId, color) => set((state) => ({
+        workBoardColumns: state.workBoardColumns.map((c) => (c.id === colId ? { ...c, color } : c)),
+      })),
       deleteWorkBoardColumn: (colId) => set((state) => ({
         workBoardColumns: state.workBoardColumns.filter((c) => c.id !== colId),
         workBoardTools: state.workBoardTools.filter((t) => t.columnId !== colId),

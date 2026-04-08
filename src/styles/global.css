@@ -367,9 +367,9 @@ input, textarea, select {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 16px 12px;
+  padding: 0 12px;
   border-bottom: 1px solid var(--color-border);
-  min-height: var(--header-height);
+  height: var(--header-height);
 }
 
 .sidebar-brand-icon {
@@ -984,9 +984,8 @@ input, textarea, select {
 .selfadmin-row-content {
   padding: 12px;
   min-height: 100px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
+  width: 100%;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -1254,12 +1253,12 @@ input, textarea, select {
 }
 
 .workboard-tool--colored {
-  background: color-mix(in srgb, var(--card-color, var(--color-primary)) 12%, transparent);
-  border-color: color-mix(in srgb, var(--card-color, var(--color-primary)) 40%, transparent);
+  background: color-mix(in srgb, var(--card-color, var(--color-primary)) 18%, transparent);
+  border-color: color-mix(in srgb, var(--card-color, var(--color-primary)) 55%, transparent);
 }
 
 .workboard-tool--colored:hover {
-  background: color-mix(in srgb, var(--card-color, var(--color-primary)) 22%, transparent);
+  background: color-mix(in srgb, var(--card-color, var(--color-primary)) 28%, transparent);
   border-color: var(--card-color, var(--color-primary));
 }
 
