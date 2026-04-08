@@ -3,7 +3,7 @@ import * as LucideIcons from 'lucide-react'
 import WikiEditor from './WikiEditor.jsx'
 import useAppStore from '../store/useAppStore.js'
 
-export default function QRGPanel({ tool }) {
+export default function QRGPanel({ tool, label = 'Quick Reference Guide' }) {
   const updateTool = useAppStore((s) => s.updateTool)
   const [isEditing, setIsEditing] = useState(false)
   const [draft, setDraft] = useState('')
@@ -81,7 +81,7 @@ export default function QRGPanel({ tool }) {
 
       {/* QRG label + edit controls */}
       <div className="qrg-section-header">
-        <span className="qrg-section-label">Quick Reference Guide</span>
+        <span className="qrg-section-label">{label}</span>
         <div className="qrg-edit-actions">
           {isEditing ? (
             <>

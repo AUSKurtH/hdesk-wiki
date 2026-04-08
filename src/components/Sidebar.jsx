@@ -82,7 +82,7 @@ export default function Sidebar({ collapsed, onToggle }) {
           title="Documentation"
         >
           <BookOpen size={18} />
-          {!collapsed && <span>Docs</span>}
+          {!collapsed && <span>Documentation</span>}
         </NavLink>
 
         <NavLink
