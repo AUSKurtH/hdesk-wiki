@@ -1,0 +1,197 @@
+/**
+ * WikiPage - MDWiki-style documentation interface
+ * Displays wiki navigation, table of contents, and markdown content
+ */
+
+import React, { useState, useMemo } from 'react'
+import { ChevronDown, ChevronRight, FileText, FolderOpen, Search, Edit2, Plus, Trash2 } from 'lucide-react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import useAppStore from '../store/useAppStore.js'
+import '../styles/wiki-page.css'
+
+export default function WikiPage() {
+  const docs = useAppStore((s) => s.docs)
+  const [selectedDocId, setSelectedDocId] = useState(null)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [expandedFolders, setExpandedFolders] = useState(new Set())
+  const [isEditing, setIsEditing] = useState(false)
+
+  // Get root-level docs (no parent)
+  const rootDocs = useMemo(() => {
+    return Object.values(docs).filter((d) => !d.parentId)
+  }, [docs])
+
+  // Get children of a parent
+  const getChildren = (parentId) => {
+    return Object.values(docs).filter((d) => d.parentId === parentId)
+  }
+
+  // Toggle folder expansion
+  const toggleFolder = (folderId) => {
+    setExpandedFolders((prev) => {
+      const next = new Set(prev)
+      if (next.has(folderId)) {
+        next.delete(folderId)
+      } else {
+        next.add(folderId)
+      }
+      return next
+    })
+  }
+
+  // Filter docs based on search
+  const filteredDocs = useMemo(() => {
+    if (!searchTerm) return docs
+    const term = searchTerm.toLowerCase()
+    const filtered = {}
+    Object.entries(docs).forEach(([id, doc]) => {
+      if (doc.title.toLowerCase().includes(term) ||
+          (doc.content && doc.content.toLowerCase().includes(term))) {
+        filtered[id] = doc
+      }
+    })
+    return filtered
+  }, [docs, searchTerm])
+
+  const selectedDoc = docs[selectedDocId]
+
+  const renderDocTree = (parentId = null, depth = 0) => {
+    const children = Object.values(docs).filter((d) => d.parentId === parentId)
+
+    return children.map((doc) => {
+      const isFolder = doc.type === 'folder'
+      const isExpanded = expandedFolders.has(doc.id)
+      const hasChildren = Object.values(docs).some((d) => d.parentId === doc.id)
+      const isSelected = selectedDocId === doc.id
+
+      return (
+        <div key={doc.id}>
+          <div
+            className={`wiki-tree-item ${isSelected ? 'active' : ''}`}
+            style={{ paddingLeft: `${depth * 16}px` }}
+            onClick={() => {
+              if (!isFolder) {
+                setSelectedDocId(doc.id)
+              } else {
+                toggleFolder(doc.id)
+              }
+            }}
+          >
+            {isFolder ? (
+              <>
+                <button
+                  className="wiki-tree-toggle"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    toggleFolder(doc.id)
+                  }}
+                >
+                  {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                </button>
+                <FolderOpen size={16} />
+              </>
+            ) : (
+              <>
+                <div className="wiki-tree-toggle" />
+                <FileText size={16} />
+              </>
+            )}
+            <span className="wiki-tree-label">{doc.title}</span>
+          </div>
+
+          {isFolder && isExpanded && renderDocTree(doc.id, depth + 1)}
+        </div>
+      )
+    })
+  }
+
+  return (
+    <div className="wiki-page-container">
+      {/* Sidebar Navigation */}
+      <aside className="wiki-sidebar">
+        <div className="wiki-sidebar-header">
+          <h2>Wiki</h2>
+        </div>
+
+        {/* Search */}
+        <div className="wiki-search-container">
+          <Search size={16} />
+          <input
+            type="text"
+            placeholder="Search docs..."
+            className="wiki-search-input"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+
+        {/* Wiki Tree */}
+        <nav className="wiki-tree">
+          {rootDocs.length === 0 ? (
+            <div className="wiki-empty-state">
+              <p>No documentation yet</p>
+            </div>
+          ) : (
+            renderDocTree()
+          )}
+        </nav>
+      </aside>
+
+      {/* Main Content */}
+      <main className="wiki-main">
+        {!selectedDocId || !selectedDoc ? (
+          <div className="wiki-empty-state">
+            <FileText size={48} strokeWidth={1} style={{ color: 'var(--color-text-subtle)', marginBottom: 16 }} />
+            <h2 style={{ color: 'var(--color-text-muted)', fontWeight: 500 }}>
+              Select a page to view
+            </h2>
+            <p style={{ color: 'var(--color-text-subtle)', marginTop: 8, fontSize: 14 }}>
+              Browse the wiki pages from the sidebar
+            </p>
+          </div>
+        ) : selectedDoc.type === 'folder' ? (
+          <div className="wiki-empty-state">
+            <FolderOpen size={48} strokeWidth={1} style={{ color: 'var(--color-text-subtle)', marginBottom: 16 }} />
+            <h2 style={{ color: 'var(--color-text-muted)', fontWeight: 500 }}>
+              {selectedDoc.title}
+            </h2>
+            <p style={{ color: 'var(--color-text-subtle)', marginTop: 8, fontSize: 14 }}>
+              {getChildren(selectedDocId).length} pages
+            </p>
+          </div>
+        ) : (
+          <div className="wiki-content">
+            <div className="wiki-header">
+              <h1>{selectedDoc.title}</h1>
+              <div className="wiki-actions">
+                <button className="btn btn-secondary btn-sm" onClick={() => setIsEditing(!isEditing)}>
+                  <Edit2 size={14} /> {isEditing ? 'Preview' : 'Edit'}
+                </button>
+              </div>
+            </div>
+
+            <div className="wiki-body">
+              {isEditing ? (
+                <textarea
+                  className="wiki-editor"
+                  value={selectedDoc.content || ''}
+                  onChange={(e) => {
+                    useAppStore.getState().updateDoc(selectedDocId, { content: e.target.value })
+                  }}
+                  placeholder="Write your documentation here..."
+                />
+              ) : (
+                <div className="wiki-markdown">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {selectedDoc.content || '# No content yet'}
+                  </ReactMarkdown>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </main>
+    </div>
+  )
+}

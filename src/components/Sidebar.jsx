@@ -1,11 +1,10 @@
 import React from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { LayoutDashboard, BookOpen, Settings, ChevronRight, Kanban, User } from 'lucide-react'
-import DocTree from './DocTree.jsx'
 
 export default function Sidebar({ collapsed, onToggle }) {
   const location = useLocation()
-  const isDocsSection = location.pathname.startsWith('/docs')
+  const isWikiSection = location.pathname.startsWith('/wiki')
 
   return (
     <aside className={`sidebar ${collapsed ? 'sidebar-collapsed' : ''}`}>
@@ -53,14 +52,14 @@ export default function Sidebar({ collapsed, onToggle }) {
         </NavLink>
 
         <NavLink
-          to="/docs"
+          to="/wiki"
           className={({ isActive }) =>
-            `sidebar-nav-item ${isActive || isDocsSection ? 'active' : ''}`
+            `sidebar-nav-item ${isActive || isWikiSection ? 'active' : ''}`
           }
-          title="Documentation"
+          title="Wiki"
         >
           <BookOpen size={18} />
-          {!collapsed && <span>Documentation</span>}
+          {!collapsed && <span>Wiki</span>}
         </NavLink>
 
         <NavLink
@@ -96,13 +95,6 @@ export default function Sidebar({ collapsed, onToggle }) {
           {!collapsed && <span>Settings</span>}
         </NavLink>
       </nav>
-
-      {/* Doc tree shown when in docs section */}
-      {!collapsed && isDocsSection && (
-        <div className="sidebar-doc-tree">
-          <DocTree />
-        </div>
-      )}
 
       {/* Footer */}
       {!collapsed && (
