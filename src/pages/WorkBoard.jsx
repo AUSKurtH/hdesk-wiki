@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { Plus, X, Pencil, GripVertical } from 'lucide-react'
+import { Plus, X, Pencil, GripVertical, Trash2 } from 'lucide-react'
 import useAppStore from '../store/useAppStore.js'
 import QRGPanel from '../components/QRGPanel.jsx'
 import * as LucideIcons from 'lucide-react'
@@ -192,7 +192,7 @@ function TaskModal({ task, columnId, onClose }) {
   )
 }
 
-function SortableWorkBoardTask({ task, onEdit, onSelect }) {
+function SortableWorkBoardTask({ task, onEdit, onSelect, onDelete }) {
   const {
     attributes,
     listeners,
@@ -219,6 +219,13 @@ function SortableWorkBoardTask({ task, onEdit, onSelect }) {
     color: task.color,
   } : {}
 
+  const handleDelete = (e) => {
+    e.stopPropagation()
+    if (window.confirm(`Delete task "${task.name}"?`)) {
+      onDelete(task.id)
+    }
+  }
+
   return (
     <div
       ref={setNodeRef}
@@ -238,30 +245,77 @@ function SortableWorkBoardTask({ task, onEdit, onSelect }) {
           <span className="workboard-tool-desc">{task.description}</span>
         )}
       </div>
-      {onEdit && (
-        <button
-          className="workboard-tool-edit btn btn-ghost btn-sm"
-          onClick={(e) => {
-            e.stopPropagation()
-            onEdit(task)
-          }}
-          title="Edit task"
-        >
-          <Pencil size={12} />
-        </button>
-      )}
+      <div className="workboard-tool-actions">
+        {onEdit && (
+          <button
+            className="workboard-tool-edit btn btn-ghost btn-sm"
+            onClick={(e) => {
+              e.stopPropagation()
+              onEdit(task)
+            }}
+            title="Edit task"
+          >
+            <Pencil size={12} />
+          </button>
+        )}
+        {onDelete && (
+          <button
+            className="workboard-tool-delete btn btn-ghost btn-sm"
+            onClick={handleDelete}
+            title="Delete task"
+          >
+            <Trash2 size={12} />
+          </button>
+        )}
+      </div>
     </div>
   )
 }
 
-function WorkBoardColumn({ column, tasks, onAddTask, onEditTask, onSelectTask }) {
+function WorkBoardColumn({ column, tasks, onAddTask, onEditTask, onSelectTask, onRenameColumn, onDeleteColumn, isEditingName, editingName, onNameChange, onNameSave, onDeleteTask }) {
   const columnTasks = tasks.filter((t) => t.columnId === column.id).sort((a, b) => (a.position || 0) - (b.position || 0))
+
+  const handleDeleteColumn = () => {
+    if (window.confirm(`Delete column "${column.name}"? All tasks in this column will be deleted.`)) {
+      onDeleteColumn(column.id)
+    }
+  }
 
   return (
     <div className="workboard-column">
       <div className="workboard-column-header">
-        <h3 className="workboard-column-title">{column.name}</h3>
-        <span className="workboard-column-count">{columnTasks.length}</span>
+        {isEditingName ? (
+          <input
+            type="text"
+            className="workboard-column-title-input"
+            value={editingName}
+            onChange={(e) => onNameChange(e.target.value)}
+            onBlur={() => onNameSave(column.id)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') onNameSave(column.id)
+              if (e.key === 'Escape') onNameChange(column.name)
+            }}
+            autoFocus
+          />
+        ) : (
+          <h3
+            className="workboard-column-title"
+            onClick={() => onRenameColumn(column.id, column.name)}
+            title="Click to rename"
+          >
+            {column.name}
+          </h3>
+        )}
+        <div className="workboard-column-header-actions">
+          <span className="workboard-column-count">{columnTasks.length}</span>
+          <button
+            className="btn btn-ghost btn-sm"
+            onClick={handleDeleteColumn}
+            title="Delete column"
+          >
+            <Trash2 size={14} />
+          </button>
+        </div>
       </div>
       <SortableContext items={columnTasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
         <div className="workboard-column-tools">
@@ -271,6 +325,7 @@ function WorkBoardColumn({ column, tasks, onAddTask, onEditTask, onSelectTask })
               task={task}
               onEdit={onEditTask}
               onSelect={onSelectTask}
+              onDelete={onDeleteTask}
             />
           ))}
           <button
@@ -292,15 +347,20 @@ export default function WorkBoard() {
   const tasks = useAppStore((s) => s.workBoardTools)
   const moveWorkBoardTool = useAppStore((s) => s.moveWorkBoardTool)
   const addWorkBoardColumn = useAppStore((s) => s.addWorkBoardColumn)
+  const deleteWorkBoardColumn = useAppStore((s) => s.deleteWorkBoardColumn)
+  const renameWorkBoardColumn = useAppStore((s) => s.renameWorkBoardColumn)
+  const deleteWorkBoardTool = useAppStore((s) => s.deleteWorkBoardTool)
 
   const [modalTask, setModalTask] = useState(null)
   const [modalColumnId, setModalColumnId] = useState(null)
   const [showModal, setShowModal] = useState(false)
   const [selectedTask, setSelectedTask] = useState(null)
-  const [rightPanelWidth, setRightPanelWidth] = useState(350)
+  const [rightPanelWidth, setRightPanelWidth] = useState(350) // 50% of typical 700px container
   const dividerRef = useRef(null)
   const containerRef = useRef(null)
   const [isDraggingDivider, setIsDraggingDivider] = useState(false)
+  const [editingColumnId, setEditingColumnId] = useState(null)
+  const [editingColumnName, setEditingColumnName] = useState('')
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
@@ -365,8 +425,8 @@ export default function WorkBoard() {
 
       const containerRect = containerRef.current.getBoundingClientRect()
       const newWidth = containerRect.right - e.clientX
-      const minWidth = 250
-      const maxWidth = containerRect.width - 300
+      const minWidth = 200
+      const maxWidth = containerRect.width - 250
 
       if (newWidth >= minWidth && newWidth <= maxWidth) {
         setRightPanelWidth(newWidth)
@@ -391,6 +451,19 @@ export default function WorkBoard() {
   const liveSelectedTask = selectedTask
     ? tasks.find((t) => t.id === selectedTask.id) || null
     : null
+
+  const handleRenameColumn = (colId, currentName) => {
+    setEditingColumnId(colId)
+    setEditingColumnName(currentName)
+  }
+
+  const handleSaveColumnName = (colId) => {
+    if (editingColumnName.trim()) {
+      renameWorkBoardColumn(colId, editingColumnName)
+    }
+    setEditingColumnId(null)
+    setEditingColumnName('')
+  }
 
   if (columns.length === 0) {
     return (
@@ -431,6 +504,13 @@ export default function WorkBoard() {
                   onAddTask={handleAddTask}
                   onEditTask={handleEditTask}
                   onSelectTask={setSelectedTask}
+                  onRenameColumn={handleRenameColumn}
+                  onDeleteColumn={deleteWorkBoardColumn}
+                  isEditingName={editingColumnId === col.id}
+                  editingName={editingColumnId === col.id ? editingColumnName : ''}
+                  onNameChange={setEditingColumnName}
+                  onNameSave={handleSaveColumnName}
+                  onDeleteTask={deleteWorkBoardTool}
                 />
               ))}
             </div>
@@ -444,8 +524,7 @@ export default function WorkBoard() {
           />
 
           <div className="workboard-right" style={{ flex: `0 0 ${rightPanelWidth}px` }}>
-            <div className="workboard-panel-label">Task Details</div>
-            <QRGPanel tool={liveSelectedTask} />
+            <QRGPanel tool={liveSelectedTask} label="Task Details" />
           </div>
         </div>
       </div>

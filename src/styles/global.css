@@ -917,6 +917,47 @@ input, textarea, select {
 }
 
 /* ══════════════════════════════════════════════════════════
+   SELF ADMIN DASHBOARD ROWS
+══════════════════════════════════════════════════════════ */
+.selfadmin-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.selfadmin-row-container {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.selfadmin-row-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.selfadmin-row-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.selfadmin-row-content {
+  padding: 12px;
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ══════════════════════════════════════════════════════════
    UI SCALE CONTROLS
 ══════════════════════════════════════════════════════════ */
 :root {
@@ -1075,14 +1116,6 @@ input, textarea, select {
   gap: 8px;
 }
 
-.workboard-panel-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--color-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: 8px 0;
-}
 
 .workboard-columns {
   display: grid;
@@ -1118,6 +1151,36 @@ input, textarea, select {
   font-weight: 600;
   color: var(--color-text);
   margin: 0;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  transition: background 0.2s;
+}
+
+.workboard-column-title:hover {
+  background: var(--color-bg);
+}
+
+.workboard-column-title-input {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+  padding: 4px 8px;
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  font-family: inherit;
+}
+
+.workboard-column-title-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.workboard-column-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .workboard-column-count {
@@ -1220,12 +1283,14 @@ input, textarea, select {
   text-overflow: ellipsis;
 }
 
-.workboard-tool-edit {
+.workboard-tool-actions {
+  display: flex;
+  gap: 4px;
   opacity: 0;
   transition: opacity var(--transition-fast);
 }
 
-.workboard-tool:hover .workboard-tool-edit {
+.workboard-tool:hover .workboard-tool-actions {
   opacity: 1;
 }
 

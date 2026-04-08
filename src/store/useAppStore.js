@@ -415,6 +415,7 @@ const useAppStore = create(
       // Self Admin Tools (separate from main dashboard)
       selfAdminCategories: [],
       selfAdminTools: [],
+      selfAdminRows: [],
       addSelfAdminCategory: (name) => set((state) => ({
         selfAdminCategories: [...state.selfAdminCategories, name],
       })),
@@ -443,6 +444,12 @@ const useAppStore = create(
           .filter(Boolean)
         return { selfAdminTools: [...otherTools, ...categoryTools] }
       }),
+      addSelfAdminRow: (name) => set((state) => ({
+        selfAdminRows: [...state.selfAdminRows, { id: `row-${Date.now()}`, name }],
+      })),
+      deleteSelfAdminRow: (rowId) => set((state) => ({
+        selfAdminRows: state.selfAdminRows.filter((r) => r.id !== rowId),
+      })),
 
       // Docs
       docs: DEFAULT_DOCS,
@@ -521,6 +528,7 @@ const useAppStore = create(
         tools: DEFAULT_TOOLS,
         selfAdminCategories: [],
         selfAdminTools: [],
+        selfAdminRows: [],
         workBoardColumns: [],
         workBoardTools: [],
         docs: DEFAULT_DOCS,
@@ -541,6 +549,7 @@ const useAppStore = create(
         tools: state.tools,
         selfAdminCategories: state.selfAdminCategories,
         selfAdminTools: state.selfAdminTools,
+        selfAdminRows: state.selfAdminRows,
         workBoardColumns: state.workBoardColumns,
         workBoardTools: state.workBoardTools,
         docs: state.docs,

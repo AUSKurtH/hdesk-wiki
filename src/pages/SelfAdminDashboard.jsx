@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Search, X, Plus } from 'lucide-react'
+import { Search, X, Plus, Trash2 } from 'lucide-react'
 import ToolGrid from '../components/ToolGrid.jsx'
 import QRGPanel from '../components/QRGPanel.jsx'
 import useAppStore from '../store/useAppStore.js'
@@ -321,8 +321,13 @@ export default function SelfAdminDashboard() {
   const [modalTool, setModalTool] = useState(null)
   const [modalCategory, setModalCategory] = useState(null)
   const [showModal, setShowModal] = useState(false)
+  const [useRowLayout, setUseRowLayout] = useState(false)
 
   const tools = useAppStore((s) => s.selfAdminTools)
+  const rows = useAppStore((s) => s.selfAdminRows)
+  const addSelfAdminRow = useAppStore((s) => s.addSelfAdminRow)
+  const deleteSelfAdminRow = useAppStore((s) => s.deleteSelfAdminRow)
+
   const liveSelectedTool = selectedTool
     ? tools.find((t) => t.id === selectedTool.id) || null
     : null
@@ -338,6 +343,21 @@ export default function SelfAdminDashboard() {
     setModalTool(null)
     setModalCategory(null)
   }
+
+  const handleDeleteRow = (rowId) => {
+    if (window.confirm('Delete this row and all tools in it?')) {
+      deleteSelfAdminRow(rowId)
+    }
+  }
+
+  const handleAddRow = () => {
+    addSelfAdminRow(`Row ${rows.length + 1}`)
+    setUseRowLayout(true)
+  }
+
+  // Check if we should use row layout (if rows exist)
+  const hasRows = rows.length > 0
+  const displayMode = useRowLayout || hasRows ? 'rows' : 'categories'
 
   return (
     <div className="dashboard">
@@ -362,24 +382,57 @@ export default function SelfAdminDashboard() {
             </button>
           )}
         </div>
-        <button
-          className="btn btn-primary btn-sm"
-          onClick={() => handleEditTool(null, null)}
-        >
-          <Plus size={15} />
-          Add Tool
-        </button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button
+            className="btn btn-primary btn-sm"
+            onClick={handleAddRow}
+          >
+            <Plus size={15} />
+            Add Row
+          </button>
+          <button
+            className="btn btn-primary btn-sm"
+            onClick={() => handleEditTool(null, null)}
+          >
+            <Plus size={15} />
+            Add Tool
+          </button>
+        </div>
       </div>
 
       {/* Split layout */}
       <div className="dashboard-split">
         <div className="dashboard-left">
-          <SelfAdminToolGrid
-            searchQuery={searchQuery}
-            onEditTool={handleEditTool}
-            onSelectTool={setSelectedTool}
-            selectedToolId={liveSelectedTool?.id}
-          />
+          {displayMode === 'rows' && hasRows ? (
+            <div className="selfadmin-rows">
+              {rows.map((row) => (
+                <div key={row.id} className="selfadmin-row-container">
+                  <div className="selfadmin-row-header">
+                    <h3 className="selfadmin-row-title">{row.name}</h3>
+                    <button
+                      className="btn btn-ghost btn-sm"
+                      onClick={() => handleDeleteRow(row.id)}
+                      title="Delete row"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                  <div className="selfadmin-row-content">
+                    <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', padding: '40px 20px' }}>
+                      Add tools to this row from the "Add Tool" button above
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <SelfAdminToolGrid
+              searchQuery={searchQuery}
+              onEditTool={handleEditTool}
+              onSelectTool={setSelectedTool}
+              selectedToolId={liveSelectedTool?.id}
+            />
+          )}
         </div>
         <div className="dashboard-right">
           <QRGPanel tool={liveSelectedTool} />
