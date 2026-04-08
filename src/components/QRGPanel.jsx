@@ -21,8 +21,8 @@ export default function QRGPanel({ tool }) {
       <div className="qrg-panel qrg-panel--empty">
         <div className="qrg-empty-state">
           <LucideIcons.MousePointerClick size={40} strokeWidth={1.2} className="qrg-empty-icon" />
-          <p className="qrg-empty-title">Select a tool</p>
-          <p className="qrg-empty-sub">Click any tool on the left to view its Quick Reference Guide</p>
+          <p className="qrg-empty-title">Select an item</p>
+          <p className="qrg-empty-sub">Click any item on the left to view details</p>
         </div>
       </div>
     )
@@ -66,15 +66,17 @@ export default function QRGPanel({ tool }) {
           </div>
         </div>
 
-        <a
-          href={tool.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn btn-launch"
-        >
-          <LucideIcons.ExternalLink size={15} />
-          Launch
-        </a>
+        {tool.url && (
+          <a
+            href={tool.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-launch"
+          >
+            <LucideIcons.ExternalLink size={15} />
+            Launch
+          </a>
+        )}
       </div>
 
       {/* QRG label + edit controls */}

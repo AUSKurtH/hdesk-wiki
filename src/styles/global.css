@@ -1038,6 +1038,52 @@ input, textarea, select {
   padding: 0 0 8px 0;
 }
 
+.workboard-split {
+  display: flex;
+  gap: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+.workboard-left {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 12px;
+}
+
+.workboard-divider {
+  width: 6px;
+  background: var(--color-border);
+  cursor: col-resize;
+  transition: background 0.2s;
+  user-select: none;
+}
+
+.workboard-divider:hover {
+  background: var(--color-primary);
+}
+
+.workboard-right {
+  flex: 0 0 350px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-left: 1px solid var(--color-border);
+  padding-left: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.workboard-panel-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 8px 0;
+}
+
 .workboard-columns {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));

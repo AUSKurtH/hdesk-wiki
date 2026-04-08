@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
-import { Plus, X, Pencil } from 'lucide-react'
+import React, { useState, useRef, useEffect } from 'react'
+import { Plus, X, Pencil, GripVertical } from 'lucide-react'
 import useAppStore from '../store/useAppStore.js'
+import QRGPanel from '../components/QRGPanel.jsx'
 import * as LucideIcons from 'lucide-react'
 import {
   DndContext,
@@ -8,12 +9,10 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  DragEndEvent,
 } from '@dnd-kit/core'
 import {
   useSortable,
   SortableContext,
-  arrayMove,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
@@ -41,39 +40,38 @@ const COLOR_PALETTE = [
   { label: 'Cyan',      value: '#086F83' },
 ]
 
-function ToolModal({ tool, columnId, onClose }) {
-  const addTool = useAppStore((s) => s.addWorkBoardTool)
-  const updateTool = useAppStore((s) => s.updateWorkBoardTool)
-  const deleteTool = useAppStore((s) => s.deleteWorkBoardTool)
+function TaskModal({ task, columnId, onClose }) {
+  const addTask = useAppStore((s) => s.addWorkBoardTool)
+  const updateTask = useAppStore((s) => s.updateWorkBoardTool)
+  const deleteTask = useAppStore((s) => s.deleteWorkBoardTool)
 
-  const isEdit = !!tool?.id
+  const isEdit = !!task?.id
 
   const [form, setForm] = useState({
-    name: tool?.name || '',
-    url: tool?.url || '',
-    icon: tool?.icon || 'Globe',
-    color: tool?.color || null,
-    description: tool?.description || '',
+    name: task?.name || '',
+    icon: task?.icon || 'Globe',
+    color: task?.color || null,
+    description: task?.description || '',
+    qrg: task?.qrg || '',
   })
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }))
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    if (!form.name.trim() || !form.url.trim()) return
-    const toolData = { ...form, columnId: columnId || tool?.columnId }
-    if (!toolData.url.startsWith('http')) toolData.url = 'https://' + toolData.url
+    if (!form.name.trim()) return
+    const taskData = { ...form, columnId: columnId || task?.columnId }
     if (isEdit) {
-      updateTool(tool.id, toolData)
+      updateTask(task.id, taskData)
     } else {
-      addTool(toolData)
+      addTask(taskData)
     }
     onClose()
   }
 
   const handleDelete = () => {
-    if (window.confirm(`Delete "${tool.name}"?`)) {
-      deleteTool(tool.id)
+    if (window.confirm(`Delete "${task.name}"?`)) {
+      deleteTask(task.id)
       onClose()
     }
   }
@@ -84,7 +82,7 @@ function ToolModal({ tool, columnId, onClose }) {
     <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="modal">
         <div className="modal-header">
-          <h2 className="modal-title">{isEdit ? 'Edit Tool' : 'Add Tool'}</h2>
+          <h2 className="modal-title">{isEdit ? 'Edit Task' : 'Add Task'}</h2>
           <button className="btn btn-ghost btn-sm" onClick={onClose}>
             <X size={16} />
           </button>
@@ -92,23 +90,12 @@ function ToolModal({ tool, columnId, onClose }) {
 
         <form onSubmit={handleSubmit} className="modal-body">
           <div className="form-group">
-            <label className="label">Name</label>
+            <label className="label">Task Name</label>
             <input
               className="input"
               value={form.name}
               onChange={(e) => set('name', e.target.value)}
-              placeholder="Tool name"
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label className="label">URL</label>
-            <input
-              className="input"
-              value={form.url}
-              onChange={(e) => set('url', e.target.value)}
-              placeholder="https://example.com"
+              placeholder="Task name"
               required
             />
           </div>
@@ -120,6 +107,17 @@ function ToolModal({ tool, columnId, onClose }) {
               value={form.description}
               onChange={(e) => set('description', e.target.value)}
               placeholder="Short description"
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="label">Task Details (optional)</label>
+            <textarea
+              className="input"
+              style={{ minHeight: '120px', fontFamily: 'monospace', fontSize: '12px' }}
+              value={form.qrg}
+              onChange={(e) => set('qrg', e.target.value)}
+              placeholder="Add notes, instructions, or details about this task"
             />
           </div>
 
@@ -150,7 +148,7 @@ function ToolModal({ tool, columnId, onClose }) {
           </div>
 
           <div className="form-group">
-            <label className="label">Button Colour</label>
+            <label className="label">Color</label>
             <div className="color-picker">
               {COLOR_PALETTE.map(({ label, value }) => {
                 const isSelected = form.color === value
@@ -185,7 +183,7 @@ function ToolModal({ tool, columnId, onClose }) {
               Cancel
             </button>
             <button type="submit" className="btn btn-primary">
-              {isEdit ? 'Save Changes' : 'Add Tool'}
+              {isEdit ? 'Save Changes' : 'Add Task'}
             </button>
           </div>
         </form>
@@ -194,7 +192,7 @@ function ToolModal({ tool, columnId, onClose }) {
   )
 }
 
-function SortableWorkBoardTool({ tool, onEdit }) {
+function SortableWorkBoardTask({ task, onEdit, onSelect }) {
   const {
     attributes,
     listeners,
@@ -202,7 +200,7 @@ function SortableWorkBoardTool({ tool, onEdit }) {
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: tool.id })
+  } = useSortable({ id: task.id })
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -210,52 +208,44 @@ function SortableWorkBoardTool({ tool, onEdit }) {
     opacity: isDragging ? 0.5 : 1,
   }
 
-  const IconComponent = LucideIcons[tool.icon] || LucideIcons.Globe
-  const cardStyle = tool.color ? {
-    '--card-color': tool.color,
-    background: `${tool.color}18`,
-    borderColor: `${tool.color}55`,
+  const IconComponent = LucideIcons[task.icon] || LucideIcons.Globe
+  const cardStyle = task.color ? {
+    '--card-color': task.color,
+    background: `${task.color}18`,
+    borderColor: `${task.color}55`,
   } : {}
-  const iconStyle = tool.color ? {
-    background: `${tool.color}30`,
-    color: tool.color,
+  const iconStyle = task.color ? {
+    background: `${task.color}30`,
+    color: task.color,
   } : {}
-
-  const handleClick = (e) => {
-    if (e.target.closest('.workboard-tool-edit')) return
-    if (!e.target.closest('[data-no-click]')) {
-      window.open(tool.url, '_blank')
-    }
-  }
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={`workboard-tool card${tool.color ? ' workboard-tool--colored' : ''}`}
-      onClick={handleClick}
+      className={`workboard-tool card${task.color ? ' workboard-tool--colored' : ''}`}
+      onClick={() => onSelect && onSelect(task)}
     >
       <div className="workboard-tool-handle" {...attributes} {...listeners}>
-        <LucideIcons.GripVertical size={14} />
+        <GripVertical size={14} />
       </div>
       <div className="workboard-tool-icon" style={iconStyle}>
         <IconComponent size={24} strokeWidth={1.5} />
       </div>
       <div className="workboard-tool-body">
-        <span className="workboard-tool-name">{tool.name}</span>
-        {tool.description && (
-          <span className="workboard-tool-desc">{tool.description}</span>
+        <span className="workboard-tool-name">{task.name}</span>
+        {task.description && (
+          <span className="workboard-tool-desc">{task.description}</span>
         )}
       </div>
       {onEdit && (
         <button
           className="workboard-tool-edit btn btn-ghost btn-sm"
-          data-no-click="true"
           onClick={(e) => {
             e.stopPropagation()
-            onEdit(tool)
+            onEdit(task)
           }}
-          title="Edit tool"
+          title="Edit task"
         >
           <Pencil size={12} />
         </button>
@@ -264,27 +254,32 @@ function SortableWorkBoardTool({ tool, onEdit }) {
   )
 }
 
-function WorkBoardColumn({ column, tools, onAddTool, onEditTool }) {
-  const columnTools = tools.filter((t) => t.columnId === column.id).sort((a, b) => (a.position || 0) - (b.position || 0))
+function WorkBoardColumn({ column, tasks, onAddTask, onEditTask, onSelectTask }) {
+  const columnTasks = tasks.filter((t) => t.columnId === column.id).sort((a, b) => (a.position || 0) - (b.position || 0))
 
   return (
     <div className="workboard-column">
       <div className="workboard-column-header">
         <h3 className="workboard-column-title">{column.name}</h3>
-        <span className="workboard-column-count">{columnTools.length}</span>
+        <span className="workboard-column-count">{columnTasks.length}</span>
       </div>
-      <SortableContext items={columnTools.map((t) => t.id)} strategy={verticalListSortingStrategy}>
+      <SortableContext items={columnTasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
         <div className="workboard-column-tools">
-          {columnTools.map((tool) => (
-            <SortableWorkBoardTool key={tool.id} tool={tool} onEdit={onEditTool} />
+          {columnTasks.map((task) => (
+            <SortableWorkBoardTask
+              key={task.id}
+              task={task}
+              onEdit={onEditTask}
+              onSelect={onSelectTask}
+            />
           ))}
           <button
             className="workboard-add-tool"
-            onClick={() => onAddTool(column.id)}
-            title={`Add tool to ${column.name}`}
+            onClick={() => onAddTask(column.id)}
+            title={`Add task to ${column.name}`}
           >
             <Plus size={18} />
-            <span>Add</span>
+            <span>Add Task</span>
           </button>
         </div>
       </SortableContext>
@@ -294,33 +289,45 @@ function WorkBoardColumn({ column, tools, onAddTool, onEditTool }) {
 
 export default function WorkBoard() {
   const columns = useAppStore((s) => s.workBoardColumns)
-  const tools = useAppStore((s) => s.workBoardTools)
+  const tasks = useAppStore((s) => s.workBoardTools)
   const moveWorkBoardTool = useAppStore((s) => s.moveWorkBoardTool)
-  const reorderWorkBoardTools = useAppStore((s) => s.reorderWorkBoardTools)
   const addWorkBoardColumn = useAppStore((s) => s.addWorkBoardColumn)
 
-  const [modalTool, setModalTool] = useState(null)
+  const [modalTask, setModalTask] = useState(null)
   const [modalColumnId, setModalColumnId] = useState(null)
   const [showModal, setShowModal] = useState(false)
+  const [selectedTask, setSelectedTask] = useState(null)
+  const [rightPanelWidth, setRightPanelWidth] = useState(350)
+  const dividerRef = useRef(null)
+  const containerRef = useRef(null)
+  const [isDraggingDivider, setIsDraggingDivider] = useState(false)
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
   )
 
-  const handleAddTool = (columnId) => {
+  // Initialize with default columns if empty
+  useEffect(() => {
+    if (columns.length === 0) {
+      addWorkBoardColumn('Personal')
+      addWorkBoardColumn('Work')
+    }
+  }, [])
+
+  const handleAddTask = (columnId) => {
     setModalColumnId(columnId)
-    setModalTool(null)
+    setModalTask(null)
     setShowModal(true)
   }
 
-  const handleEditTool = (tool) => {
-    setModalTool(tool)
+  const handleEditTask = (task) => {
+    setModalTask(task)
     setShowModal(true)
   }
 
   const handleCloseModal = () => {
     setShowModal(false)
-    setModalTool(null)
+    setModalTask(null)
     setModalColumnId(null)
   }
 
@@ -328,28 +335,62 @@ export default function WorkBoard() {
     const { active, over } = event
 
     if (!over) return
-
     if (active.id === over.id) return
 
-    // Extract column ID from the over item id (format: "tool-xxx" for tools, "col-xxx" for columns)
-    const activeTool = tools.find((t) => t.id === active.id)
-    if (!activeTool) return
+    const activeTask = tasks.find((t) => t.id === active.id)
+    if (!activeTask) return
 
-    // Find the target column - could be dragging over a tool in that column
-    const overTool = tools.find((t) => t.id === over.id)
-    const targetColumnId = overTool?.columnId || modalColumnId
+    const overTask = tasks.find((t) => t.id === over.id)
+    const targetColumnId = overTask?.columnId || modalColumnId
 
     if (!targetColumnId) return
 
-    const targetColumnTools = tools
-      .filter((t) => t.columnId === targetColumnId && t.id !== activeTool.id)
+    const targetColumnTasks = tasks
+      .filter((t) => t.columnId === targetColumnId && t.id !== activeTask.id)
       .sort((a, b) => (a.position || 0) - (b.position || 0))
 
-    const overIndex = targetColumnTools.findIndex((t) => t.id === over.id)
-    const position = overIndex >= 0 ? overIndex : targetColumnTools.length
+    const overIndex = targetColumnTasks.findIndex((t) => t.id === over.id)
+    const position = overIndex >= 0 ? overIndex : targetColumnTasks.length
 
-    moveWorkBoardTool(activeTool.id, targetColumnId, position)
+    moveWorkBoardTool(activeTask.id, targetColumnId, position)
   }
+
+  const handleDividerMouseDown = () => {
+    setIsDraggingDivider(true)
+  }
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!isDraggingDivider || !containerRef.current) return
+
+      const containerRect = containerRef.current.getBoundingClientRect()
+      const newWidth = containerRect.right - e.clientX
+      const minWidth = 250
+      const maxWidth = containerRect.width - 300
+
+      if (newWidth >= minWidth && newWidth <= maxWidth) {
+        setRightPanelWidth(newWidth)
+      }
+    }
+
+    const handleMouseUp = () => {
+      setIsDraggingDivider(false)
+    }
+
+    if (isDraggingDivider) {
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', handleMouseUp)
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [isDraggingDivider])
+
+  const liveSelectedTask = selectedTask
+    ? tasks.find((t) => t.id === selectedTask.id) || null
+    : null
 
   if (columns.length === 0) {
     return (
@@ -368,7 +409,7 @@ export default function WorkBoard() {
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-      <div className="workboard">
+      <div className="workboard" ref={containerRef}>
         <div className="workboard-header">
           <button
             className="btn btn-primary btn-sm"
@@ -379,22 +420,39 @@ export default function WorkBoard() {
           </button>
         </div>
 
-        <div className="workboard-columns">
-          {columns.map((col) => (
-            <WorkBoardColumn
-              key={col.id}
-              column={col}
-              tools={tools}
-              onAddTool={handleAddTool}
-              onEditTool={handleEditTool}
-            />
-          ))}
+        <div className="workboard-split">
+          <div className="workboard-left" style={{ flex: `1 1 calc(100% - ${rightPanelWidth}px)` }}>
+            <div className="workboard-columns">
+              {columns.map((col) => (
+                <WorkBoardColumn
+                  key={col.id}
+                  column={col}
+                  tasks={tasks}
+                  onAddTask={handleAddTask}
+                  onEditTask={handleEditTask}
+                  onSelectTask={setSelectedTask}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div
+            className="workboard-divider"
+            ref={dividerRef}
+            onMouseDown={handleDividerMouseDown}
+            style={{ cursor: isDraggingDivider ? 'col-resize' : 'col-resize' }}
+          />
+
+          <div className="workboard-right" style={{ flex: `0 0 ${rightPanelWidth}px` }}>
+            <div className="workboard-panel-label">Task Details</div>
+            <QRGPanel tool={liveSelectedTask} />
+          </div>
         </div>
       </div>
 
       {showModal && (
-        <ToolModal
-          tool={modalTool}
+        <TaskModal
+          task={modalTask}
           columnId={modalColumnId}
           onClose={handleCloseModal}
         />
