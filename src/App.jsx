@@ -4,7 +4,7 @@ import Layout from './components/Layout.jsx'
 import Dashboard from './pages/Dashboard.jsx'
 import SelfAdminDashboard from './pages/SelfAdminDashboard.jsx'
 import WorkBoard from './pages/WorkBoard.jsx'
-import DocPage from './pages/DocPage.jsx'
+import WikiPage from './pages/WikiPage.jsx'
 import Settings from './pages/Settings.jsx'
 import useAppStore from './store/useAppStore.js'
 
@@ -58,8 +58,7 @@ export default function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/self-admin" element={<SelfAdminDashboard />} />
         <Route path="/work-board" element={<WorkBoard />} />
-        <Route path="/docs" element={<DocPage />} />
-        <Route path="/docs/:docId" element={<DocPage />} />
+        <Route path="/wiki" element={<WikiPage />} />
         <Route path="/settings" element={<Settings />} />
       </Routes>
     </Layout>
