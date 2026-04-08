@@ -30,6 +30,7 @@ import {
 } from 'lucide-react'
 import * as LucideIcons from 'lucide-react'
 import useAppStore from '../store/useAppStore.js'
+import { ICON_OPTIONS } from '../constants/ui.js'
 
 // ── Shared helpers ─────────────────────────────────────────────────────────────
 
@@ -300,13 +301,6 @@ function ThemeSection() {
     </section>
   )
 }
-
-const ICON_OPTIONS = [
-  'Globe', 'Ticket', 'LayoutDashboard', 'MessageSquare', 'Video', 'Mail',
-  'Monitor', 'MonitorDot', 'Shield', 'GraduationCap', 'Users', 'KeyRound',
-  'Activity', 'BarChart2', 'Zap', 'Database', 'Cloud', 'Lock', 'Bell',
-  'Code', 'Terminal', 'Cpu', 'Server', 'Wifi', 'Phone', 'Headphones',
-]
 
 // ── Sortable Tool Row ─────────────────────────────────────────────────────────
 

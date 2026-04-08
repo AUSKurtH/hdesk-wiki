@@ -1,6 +1,6 @@
 import React from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { LayoutDashboard, BookOpen, Settings, ChevronRight } from 'lucide-react'
+import { LayoutDashboard, BookOpen, Settings, ChevronRight, Kanban, User } from 'lucide-react'
 import DocTree from './DocTree.jsx'
 
 export default function Sidebar({ collapsed, onToggle }) {
@@ -46,10 +46,10 @@ export default function Sidebar({ collapsed, onToggle }) {
           className={({ isActive }) =>
             `sidebar-nav-item ${isActive ? 'active' : ''}`
           }
-          title="Dashboard"
+          title="Helpdesk"
         >
           <LayoutDashboard size={18} />
-          {!collapsed && <span>Dashboard</span>}
+          {!collapsed && <span>Helpdesk</span>}
         </NavLink>
 
         <NavLink
@@ -60,7 +60,29 @@ export default function Sidebar({ collapsed, onToggle }) {
           title="Documentation"
         >
           <BookOpen size={18} />
-          {!collapsed && <span>Docs</span>}
+          {!collapsed && <span>Documentation</span>}
+        </NavLink>
+
+        <NavLink
+          to="/work-board"
+          className={({ isActive }) =>
+            `sidebar-nav-item ${isActive ? 'active' : ''}`
+          }
+          title="Work Board"
+        >
+          <Kanban size={18} />
+          {!collapsed && <span>Work Board</span>}
+        </NavLink>
+
+        <NavLink
+          to="/self-admin"
+          className={({ isActive }) =>
+            `sidebar-nav-item ${isActive ? 'active' : ''}`
+          }
+          title="Self Administration"
+        >
+          <User size={18} />
+          {!collapsed && <span>Self Admin</span>}
         </NavLink>
 
         <NavLink
@@ -85,7 +107,7 @@ export default function Sidebar({ collapsed, onToggle }) {
       {/* Footer */}
       {!collapsed && (
         <div className="sidebar-footer">
-          <span className="sidebar-footer-text">Helpdesk Wiki v0.1</span>
+          <span className="sidebar-footer-text">Helpdesk Wiki v0.2.65</span>
           <span className="sidebar-footer-sub">Created by Kurt Hvejsel 2026</span>
         </div>
       )}

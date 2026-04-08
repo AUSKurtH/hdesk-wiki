@@ -11,6 +11,8 @@ export default function Layout({ children }) {
   const pageTitle = () => {
     if (location.pathname.startsWith('/docs')) return 'Documentation'
     if (location.pathname.startsWith('/settings')) return 'Settings'
+    if (location.pathname === '/self-admin') return 'Self Administration'
+    if (location.pathname === '/work-board') return 'Work Board'
     return 'Helpdesk Dashboard'
   }
 
