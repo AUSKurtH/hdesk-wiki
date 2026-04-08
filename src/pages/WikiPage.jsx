@@ -7,6 +7,9 @@ import React, { useState, useMemo, useRef } from 'react'
 import { ChevronDown, ChevronRight, FileText, FolderOpen, Search, Edit2, Plus, Trash2, Image as ImageIcon } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import MDEditor from '@uiw/react-md-editor'
+import '@uiw/react-md-editor/markdown-editor.css'
+import '@uiw/react-markdown-preview/markdown.css'
 import useAppStore from '../store/useAppStore.js'
 import '../styles/wiki-page.css'
 
@@ -211,14 +214,30 @@ export default function WikiPage() {
 
             <div className="wiki-body">
               {isEditing ? (
-                <textarea
-                  className="wiki-editor"
-                  value={selectedDoc.content || ''}
-                  onChange={(e) => {
-                    useAppStore.getState().updateDoc(selectedDocId, { content: e.target.value })
+                <div
+                  className="wiki-md-editor-wrapper"
+                  data-color-mode="auto"
+                  style={{
+                    '--md-color-bg': 'var(--color-surface)',
+                    '--md-color-text': 'var(--color-text)',
+                    '--md-color-border': 'var(--color-border)',
                   }}
-                  placeholder="Write your documentation here..."
-                />
+                >
+                  <MDEditor
+                    value={selectedDoc.content || ''}
+                    onChange={(val) => {
+                      useAppStore.getState().updateDoc(selectedDocId, { content: val || '' })
+                    }}
+                    preview="edit"
+                    hideToolbar={false}
+                    visibleDragbar={false}
+                    height={600}
+                    className="wiki-md-editor"
+                    textareaProps={{
+                      placeholder: 'Write your documentation here...',
+                    }}
+                  />
+                </div>
               ) : (
                 <div className="wiki-markdown">
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>

@@ -160,31 +160,67 @@
   border-radius: 6px;
 }
 
-/* Markdown Editor */
-.wiki-editor {
-  width: 100%;
-  min-height: 400px;
-  padding: 16px;
-  border: 1px solid var(--color-border);
+/* Markdown Editor - Live Preview */
+.wiki-md-editor-wrapper {
+  height: 100%;
   border-radius: 6px;
-  background-color: var(--color-surface);
-  color: var(--color-text);
-  font-family: 'Monaco', 'Courier New', monospace;
-  font-size: 14px;
-  line-height: 1.6;
-  resize: none;
+  overflow: hidden;
 }
 
-.wiki-editor:focus {
-  outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(var(--color-primary-rgb), 0.1);
+.wiki-md-editor {
+  border-radius: 6px !important;
+  border: 1px solid var(--color-border) !important;
+}
+
+.wiki-md-editor .md-editor {
+  background-color: var(--color-surface) !important;
+  border-radius: 6px !important;
+}
+
+.wiki-md-editor .md-editor-text {
+  color: var(--color-text) !important;
+  font-family: 'Monaco', 'Courier New', monospace;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+}
+
+.wiki-md-editor .md-editor-preview {
+  background-color: var(--color-bg) !important;
+  color: var(--color-text) !important;
+  padding: 16px !important;
+}
+
+.wiki-md-editor .md-editor-preview-text {
+  color: var(--color-text) !important;
+}
+
+.wiki-md-editor textarea {
+  background-color: var(--color-surface) !important;
+  color: var(--color-text) !important;
+  caret-color: var(--color-primary) !important;
+}
+
+.wiki-md-editor .md-editor-toolbar {
+  background-color: var(--color-sidebar) !important;
+  border-bottom: 1px solid var(--color-border) !important;
+}
+
+.wiki-md-editor .md-editor-toolbar button {
+  color: var(--color-text) !important;
+}
+
+.wiki-md-editor .md-editor-toolbar button:hover {
+  background-color: var(--color-surface) !important;
+}
+
+.wiki-md-editor .md-editor-toolbar-divider {
+  background-color: var(--color-border) !important;
 }
 
 /* Markdown Rendering */
-.wiki-markdown {
-  max-width: 900px;
-  margin: 0 auto;
+.wiki-markdown,
+.wiki-editor-preview {
+  max-width: 100%;
   width: 100%;
 }
 
@@ -337,5 +373,9 @@
 
   .wiki-markdown {
     max-width: 100%;
+  }
+
+  .wiki-md-editor {
+    height: 400px !important;
   }
 }
