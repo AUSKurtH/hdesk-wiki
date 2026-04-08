@@ -38,6 +38,11 @@ export default function ChapterEditor({ bookId, chapterId, onBookDeleted }) {
       setLoading(true)
       loadContent(bookId, chapterId)
         .then(content => {
+          console.log('Loaded content:', {
+            length: content.length,
+            hasImages: content.includes('<img') || content.includes('!['),
+            preview: content.substring(0, 200),
+          })
           setContent(content)
           setTitleDraft(chapter?.title || '')
           setIsEditing(false)
@@ -71,6 +76,13 @@ export default function ChapterEditor({ bookId, chapterId, onBookDeleted }) {
   const handleSave = async () => {
     setLoading(true)
     try {
+      // Debug: log what's being saved
+      console.log('Saving content:', {
+        length: content.length,
+        hasImages: content.includes('<img') || content.includes('!['),
+        preview: content.substring(0, 200),
+      })
+
       // Save content
       await saveContent(bookId, chapterId, content)
 
