@@ -29,6 +29,18 @@ const td = new TurndownService({
 })
 td.use(gfm)
 
+// Keep img tags as HTML to preserve base64 data URLs
+td.addRule('img', {
+  filter: 'img',
+  replacement: (content, node) => {
+    const src = node.getAttribute('src') || ''
+    const alt = node.getAttribute('alt') || 'image'
+    const style = node.getAttribute('style') || 'max-width: 100%; height: auto;'
+    // Return as HTML to preserve data URLs
+    return `<img src="${src}" alt="${alt}" style="${style}" />`
+  }
+})
+
 function markdownToHtml(md) {
   if (!md) return ''
   return marked.parse(md)
