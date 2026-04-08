@@ -31,6 +31,8 @@ import {
 import * as LucideIcons from 'lucide-react'
 import useAppStore from '../store/useAppStore.js'
 import { ICON_OPTIONS } from '../constants/ui.js'
+import BooksManagement from '../components/BooksManagement.jsx'
+import '../styles/books-management.css'
 
 // ── Shared helpers ─────────────────────────────────────────────────────────────
 
@@ -751,6 +753,11 @@ export default function Settings() {
           </button>
         </div>
       </section>
+
+      <div className="divider" />
+
+      {/* ── Books Management ──────────────────────────────── */}
+      <BooksManagement />
 
       <div className="divider" />
 
