@@ -174,16 +174,7 @@ class StorageManager {
     if (!book) return null
 
     const chapters = await this.listChapters(bookId)
-    const chapter = chapters.find(c => c.id === chapterId) || null
-
-    if (chapter) {
-      console.log(`[StorageManager] Retrieved chapter: ${chapterId}`, {
-        hasContent: !!chapter.content,
-        contentLength: chapter.content?.length || 0,
-      })
-    }
-
-    return chapter
+    return chapters.find(c => c.id === chapterId) || null
   }
 
   /**
@@ -244,14 +235,8 @@ class StorageManager {
     const chapter = await this.getChapter(bookId, chapterId)
     if (!chapter) throw new Error(`Chapter not found: ${chapterId}`)
 
-    console.log(`[StorageManager] Reading content for chapter: ${chapterId}`, {
-      hasContent: !!chapter.content,
-      contentLength: chapter.content?.length || 0,
-    })
-
     // Primary: content stored in chapter object
     if (chapter.content) {
-      console.log(`[StorageManager] Found content in chapter object: ${chapterId}`)
       return chapter.content
     }
 
@@ -259,15 +244,11 @@ class StorageManager {
     try {
       const notesPath = `${chapter.path}/Notes.md`
       const content = await this._readFile(notesPath)
-      if (content) {
-        console.log(`[StorageManager] Found content in files store: ${chapterId}`)
-        return content
-      }
+      if (content) return content
     } catch (err) {
-      console.warn('[StorageManager] Failed to read from files store:', err)
+      // Silently fail, will return empty string
     }
 
-    console.log(`[StorageManager] No content found for chapter: ${chapterId}`)
     return ''
   }
 
@@ -282,32 +263,21 @@ class StorageManager {
     const chapter = await this.getChapter(bookId, chapterId)
     if (!chapter) throw new Error(`Chapter not found: ${chapterId}`)
 
-    console.log(`[StorageManager] Saving content for chapter: ${chapterId}`, {
-      length: content.length,
-      path: chapter.path,
-    })
-
     // Store content directly in chapter object
     chapter.content = content
     chapter.updatedAt = new Date().toISOString()
 
-    try {
-      await this._writeToStore(STORAGE_CONFIG.chapterStore, {
-        path: chapter.path,
-        data: chapter,
-      })
-      console.log(`[StorageManager] Chapter saved successfully: ${chapterId}`)
-    } catch (err) {
-      console.error(`[StorageManager] Failed to save chapter: ${chapterId}`, err)
-      throw err
-    }
+    await this._writeToStore(STORAGE_CONFIG.chapterStore, {
+      path: chapter.path,
+      data: chapter,
+    })
 
     // Try to also save to files store (optional)
     try {
       const notesPath = `${chapter.path}/Notes.md`
       await this._writeFile(notesPath, content)
     } catch (err) {
-      console.warn(`[StorageManager] Failed to save to files store (non-critical):`, err)
+      // Non-critical, silently fail
     }
   }
 
