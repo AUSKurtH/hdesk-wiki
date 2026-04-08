@@ -18,7 +18,22 @@ import {
   Link2, Palette, Image as ImageIcon,
 } from 'lucide-react'
 
-marked.setOptions({ breaks: true, gfm: true })
+marked.setOptions({
+  breaks: true,
+  gfm: true,
+  async: false,
+  silent: true
+})
+
+// Custom marked extensions to handle image data URLs
+marked.use({
+  renderer: {
+    image(token) {
+      // Render all images, including base64 data URLs
+      return `<img src="${token.href}" alt="${token.text}" style="max-width: 100%; height: auto;" />`
+    }
+  }
+})
 
 const td = new TurndownService({
   headingStyle: 'atx',
@@ -28,18 +43,6 @@ const td = new TurndownService({
   fence: '```',
 })
 td.use(gfm)
-
-// Keep img tags as HTML to preserve base64 data URLs
-td.addRule('img', {
-  filter: 'img',
-  replacement: (content, node) => {
-    const src = node.getAttribute('src') || ''
-    const alt = node.getAttribute('alt') || 'image'
-    const style = node.getAttribute('style') || 'max-width: 100%; height: auto;'
-    // Return as HTML to preserve data URLs
-    return `<img src="${src}" alt="${alt}" style="${style}" />`
-  }
-})
 
 function markdownToHtml(md) {
   if (!md) return ''
@@ -240,7 +243,10 @@ export default function WikiEditor({ value = '', onChange, placeholder = 'Start 
                   reader.onload = (ev) => {
                     const dataUrl = ev.target?.result
                     if (dataUrl && editor?.isActive) {
-                      editor.chain().focus().insertContent(`<img src="${dataUrl}" style="max-width: 100%; height: auto;" alt="Pasted image" />`).run()
+                      // Use markdown image syntax to preserve through conversion
+                      const markdown = `![Pasted image](${dataUrl})`
+                      const html = marked.parse(markdown)
+                      editor.chain().focus().insertContent(html).run()
                     }
                   }
                   reader.readAsDataURL(file)
@@ -296,7 +302,10 @@ export default function WikiEditor({ value = '', onChange, placeholder = 'Start 
     reader.onload = (ev) => {
       const dataUrl = ev.target?.result
       if (dataUrl) {
-        editor.chain().focus().insertContent(`<img src="${dataUrl}" style="max-width: 100%; height: auto;" alt="Image" />`).run()
+        // Use markdown image syntax to preserve through conversion
+        const markdown = `![Image](${dataUrl})`
+        const html = marked.parse(markdown)
+        editor.chain().focus().insertContent(html).run()
       }
     }
     reader.readAsDataURL(file)
