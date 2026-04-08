@@ -65,6 +65,9 @@ class StorageManager {
         if (!db.objectStoreNames.contains(STORAGE_CONFIG.indexStore)) {
           db.createObjectStore(STORAGE_CONFIG.indexStore, { keyPath: 'id' })
         }
+        if (!db.objectStoreNames.contains('files')) {
+          db.createObjectStore('files', { keyPath: 'path' })
+        }
       }
     })
   }
@@ -454,30 +457,45 @@ class StorageManager {
   }
 
   /**
-   * Write file (simulated via IndexedDB)
+   * Write file (stored via IndexedDB)
    */
   async _writeFile(path, content) {
     if (!this.db) await this.init()
 
-    // Store as file metadata
-    const store = 'files' // Would need to add this in onupgradeneeded
     const fileData = {
       path,
       content,
       updatedAt: new Date().toISOString(),
     }
 
-    // For now, just update the relevant metadata
-    return fileData
+    // Store in IndexedDB files store
+    return new Promise((resolve, reject) => {
+      const tx = this.db.transaction(['files'], 'readwrite')
+      const store = tx.objectStore('files')
+      const request = store.put(fileData)
+
+      request.onerror = () => reject(request.error)
+      request.onsuccess = () => resolve(fileData)
+    })
   }
 
   /**
-   * Read file
+   * Read file from IndexedDB
    */
   async _readFile(path) {
-    // Retrieve from stored content
-    // This would be fetched from IndexedDB or cached content
-    return ''
+    if (!this.db) await this.init()
+
+    return new Promise((resolve, reject) => {
+      const tx = this.db.transaction(['files'], 'readonly')
+      const store = tx.objectStore('files')
+      const request = store.get(path)
+
+      request.onerror = () => reject(request.error)
+      request.onsuccess = () => {
+        const result = request.result
+        resolve(result ? result.content : '')
+      }
+    })
   }
 
   /**

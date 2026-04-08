@@ -294,6 +294,39 @@ const useBooksStore = create(
         set({ contentCache: {} })
       },
 
+      // ============ Reordering ============
+
+      /**
+       * Reorder chapters within a book
+       */
+      reorderChapters: async (bookId, orderedChapterIds) => {
+        try {
+          const chapters = await StorageManager.listChapters(bookId)
+
+          // Update order for each chapter
+          for (let i = 0; i < orderedChapterIds.length; i++) {
+            const chapterId = orderedChapterIds[i]
+            const chapter = chapters.find(c => c.id === chapterId)
+            if (chapter) {
+              await StorageManager.updateChapter(bookId, chapterId, { order: i })
+            }
+          }
+
+          // Refresh chapters
+          await StorageManager.init()
+          const updated = await StorageManager.listChapters(bookId)
+          set((state) => ({
+            chapters: {
+              ...state.chapters,
+              [bookId]: updated,
+            },
+          }))
+        } catch (error) {
+          set({ error: error.message })
+          throw error
+        }
+      },
+
       // ============ Import/Export ============
 
       /**
