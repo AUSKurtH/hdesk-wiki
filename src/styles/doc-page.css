@@ -123,6 +123,27 @@
   padding: 0;
 }
 
+.books-nav-drag-handle {
+  padding: 6px 4px;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.books-nav-drag-handle:active {
+  cursor: grabbing;
+  color: var(--color-primary);
+}
+
+.books-nav-drag-handle:hover {
+  color: var(--color-text);
+}
+
 .books-nav-toggle {
   padding: 6px 8px;
   background: none;
@@ -189,6 +210,9 @@
   background: var(--color-bg);
   border-left: 2px solid var(--color-primary);
   padding: 4px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
 .books-nav-no-chapters {
@@ -198,12 +222,42 @@
   font-style: italic;
 }
 
+.books-nav-chapter-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0;
+}
+
+.books-nav-chapter-drag-handle {
+  padding: 6px 4px;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: all 0.2s ease;
+}
+
+.books-nav-chapter-wrapper:hover .books-nav-chapter-drag-handle {
+  opacity: 1;
+}
+
+.books-nav-chapter-drag-handle:active {
+  cursor: grabbing;
+  color: var(--color-primary);
+}
+
 .books-nav-chapter {
+  flex: 1;
   display: flex;
   align-items: center;
   gap: 6px;
   width: 100%;
-  padding: 6px 12px 6px 24px;
+  padding: 6px 12px 6px 8px;
   background: none;
   border: none;
   color: var(--color-text-muted);
@@ -225,6 +279,71 @@
   color: var(--color-primary);
   background: var(--color-surface);
   font-weight: 500;
+}
+
+/* Chapter Creation Form */
+
+.books-nav-chapter-form {
+  display: flex;
+  gap: 4px;
+  align-items: flex-end;
+  padding: 4px 8px;
+  background: var(--color-surface-alt);
+  border-top: 1px solid var(--color-border);
+}
+
+.books-nav-chapter-form .input-xs {
+  flex: 1;
+  font-size: 11px;
+  padding: 4px 6px;
+  min-width: 100px;
+}
+
+.books-nav-add-chapter-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 4px 12px 4px 20px;
+  background: none;
+  border: none;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: 11px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.books-nav-add-chapter-btn:hover:not(:disabled) {
+  color: var(--color-text);
+  background: var(--color-surface-alt);
+}
+
+.books-nav-add-chapter-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Drag Overlay */
+
+.books-nav-drag-overlay {
+  padding: 8px 12px;
+  background: var(--color-primary);
+  color: white;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Input Size Variants */
+
+.input-xs {
+  font-size: 11px !important;
+  padding: 4px 6px !important;
+  height: auto !important;
+  min-height: 24px !important;
 }
 
 /* Chapter Editor */
