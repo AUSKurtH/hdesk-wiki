@@ -107,7 +107,7 @@ export default function Sidebar({ collapsed, onToggle }) {
       {/* Footer */}
       {!collapsed && (
         <div className="sidebar-footer">
-          <span className="sidebar-footer-text">Helpdesk Wiki v0.2.51</span>
+          <span className="sidebar-footer-text">Helpdesk Wiki v0.2.60</span>
           <span className="sidebar-footer-sub">Created by Kurt Hvejsel 2026</span>
         </div>
       )}
