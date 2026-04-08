@@ -409,10 +409,12 @@ export default function WorkBoard() {
     if (!activeTask) return
 
     const overTask = tasks.find((t) => t.id === over.id)
-    const targetColumnId = overTask?.columnId || modalColumnId
+    if (!overTask) return
 
-    if (!targetColumnId) return
+    // Only allow reordering within the same column - disable cross-column dragging
+    if (activeTask.columnId !== overTask.columnId) return
 
+    const targetColumnId = activeTask.columnId
     const targetColumnTasks = tasks
       .filter((t) => t.columnId === targetColumnId && t.id !== activeTask.id)
       .sort((a, b) => (a.position || 0) - (b.position || 0))
@@ -420,7 +422,8 @@ export default function WorkBoard() {
     const overIndex = targetColumnTasks.findIndex((t) => t.id === over.id)
     const position = overIndex >= 0 ? overIndex : targetColumnTasks.length
 
-    moveWorkBoardTool(activeTask.id, targetColumnId, position)
+    // Note: Reordering within column logic would go here
+    // For now, we're just preventing cross-column moves
   }
 
   const handleDividerMouseDown = () => {

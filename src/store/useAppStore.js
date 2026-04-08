@@ -364,7 +364,7 @@ const useAppStore = create(
       workBoardColumns: [],
       workBoardTools: [],
       addWorkBoardColumn: (name) => set((state) => ({
-        workBoardColumns: [...state.workBoardColumns, { id: `col-${Date.now()}`, name }],
+        workBoardColumns: [...state.workBoardColumns, { id: `col-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, name }],
       })),
       renameWorkBoardColumn: (colId, newName) => set((state) => ({
         workBoardColumns: state.workBoardColumns.map((c) => (c.id === colId ? { ...c, name: newName } : c)),
@@ -375,7 +375,7 @@ const useAppStore = create(
       })),
       reorderWorkBoardColumns: (columns) => set({ workBoardColumns: columns }),
       addWorkBoardTool: (tool) => set((state) => ({
-        workBoardTools: [...state.workBoardTools, { ...tool, id: `tool-${Date.now()}` }],
+        workBoardTools: [...state.workBoardTools, { ...tool, id: `tool-${Date.now()}-${Math.random().toString(36).substr(2, 9)}` }],
       })),
       updateWorkBoardTool: (id, updates) => set((state) => ({
         workBoardTools: state.workBoardTools.map((t) => (t.id === id ? { ...t, ...updates } : t)),
@@ -445,10 +445,14 @@ const useAppStore = create(
         return { selfAdminTools: [...otherTools, ...categoryTools] }
       }),
       addSelfAdminRow: (name) => set((state) => ({
-        selfAdminRows: [...state.selfAdminRows, { id: `row-${Date.now()}`, name }],
+        selfAdminRows: [...state.selfAdminRows, { id: `row-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, name }],
+      })),
+      renameSelfAdminRow: (rowId, newName) => set((state) => ({
+        selfAdminRows: state.selfAdminRows.map((r) => (r.id === rowId ? { ...r, name: newName } : r)),
       })),
       deleteSelfAdminRow: (rowId) => set((state) => ({
         selfAdminRows: state.selfAdminRows.filter((r) => r.id !== rowId),
+        selfAdminTools: state.selfAdminTools.filter((t) => t.category !== rowId),
       })),
 
       // Docs

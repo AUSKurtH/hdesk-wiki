@@ -28,7 +28,7 @@ const COLOR_PALETTE = [
   { label: 'Cyan',      value: '#086F83' },
 ]
 
-function ToolModal({ tool, defaultCategory, onClose }) {
+function ToolModal({ tool, defaultCategory, onClose, hideCategory = false }) {
   const categories = useAppStore((s) => s.selfAdminCategories)
   const addTool = useAppStore((s) => s.addSelfAdminTool)
   const updateTool = useAppStore((s) => s.updateSelfAdminTool)
@@ -112,18 +112,20 @@ function ToolModal({ tool, defaultCategory, onClose }) {
             />
           </div>
 
-          <div className="form-group">
-            <label className="label">Category</label>
-            <select
-              className="input"
-              value={form.category}
-              onChange={(e) => set('category', e.target.value)}
-            >
-              {categories.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
-          </div>
+          {!hideCategory && (
+            <div className="form-group">
+              <label className="label">Category</label>
+              <select
+                className="input"
+                value={form.category}
+                onChange={(e) => set('category', e.target.value)}
+              >
+                {categories.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div className="form-group">
             <label className="label">Icon</label>
@@ -323,10 +325,13 @@ export default function SelfAdminDashboard() {
   const [showModal, setShowModal] = useState(false)
   const [useRowLayout, setUseRowLayout] = useState(false)
   const [selectedRowForAddingTool, setSelectedRowForAddingTool] = useState(null)
+  const [editingRowId, setEditingRowId] = useState(null)
+  const [editingRowName, setEditingRowName] = useState('')
 
   const tools = useAppStore((s) => s.selfAdminTools)
   const rows = useAppStore((s) => s.selfAdminRows)
   const addSelfAdminRow = useAppStore((s) => s.addSelfAdminRow)
+  const renameSelfAdminRow = useAppStore((s) => s.renameSelfAdminRow)
   const deleteSelfAdminRow = useAppStore((s) => s.deleteSelfAdminRow)
 
   const liveSelectedTool = selectedTool
@@ -361,6 +366,19 @@ export default function SelfAdminDashboard() {
     setModalTool(null)
     setModalCategory(rowId) // Use row ID as category
     setShowModal(true)
+  }
+
+  const handleRenameRow = (rowId, currentName) => {
+    setEditingRowId(rowId)
+    setEditingRowName(currentName)
+  }
+
+  const handleSaveRowName = (rowId) => {
+    if (editingRowName.trim()) {
+      renameSelfAdminRow(rowId, editingRowName)
+    }
+    setEditingRowId(null)
+    setEditingRowName('')
   }
 
   // Check if we should use row layout (if rows exist)
@@ -418,7 +436,31 @@ export default function SelfAdminDashboard() {
                 return (
                   <div key={row.id} className="selfadmin-row-container">
                     <div className="selfadmin-row-header">
-                      <h3 className="selfadmin-row-title">{row.name}</h3>
+                      {editingRowId === row.id ? (
+                        <input
+                          type="text"
+                          className="selfadmin-row-title-input"
+                          value={editingRowName}
+                          onChange={(e) => setEditingRowName(e.target.value)}
+                          onBlur={() => handleSaveRowName(row.id)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleSaveRowName(row.id)
+                            if (e.key === 'Escape') {
+                              setEditingRowId(null)
+                              setEditingRowName('')
+                            }
+                          }}
+                          autoFocus
+                        />
+                      ) : (
+                        <h3
+                          className="selfadmin-row-title"
+                          onClick={() => handleRenameRow(row.id, row.name)}
+                          title="Click to rename"
+                        >
+                          {row.name}
+                        </h3>
+                      )}
                       <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                         <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
                           {rowTools.length} tools
@@ -511,6 +553,7 @@ export default function SelfAdminDashboard() {
           tool={modalTool}
           defaultCategory={modalCategory}
           onClose={handleCloseModal}
+          hideCategory={hasRows}
         />
       )}
     </div>
