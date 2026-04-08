@@ -1,47 +1,29 @@
 import React, { useState } from 'react'
-import { Search, X, Plus, Trash2 } from 'lucide-react'
-import ToolGrid from '../components/ToolGrid.jsx'
+import { Search, X, Plus, Trash2, ChevronDown, ChevronRight } from 'lucide-react'
+import * as LucideIcons from 'lucide-react'
+import ToolCard from '../components/ToolCard.jsx'
 import QRGPanel from '../components/QRGPanel.jsx'
 import useAppStore from '../store/useAppStore.js'
-import * as LucideIcons from 'lucide-react'
+import { ICON_OPTIONS, COLOR_PALETTE } from '../constants/ui.js'
 
-const ICON_OPTIONS = [
-  'Globe', 'Ticket', 'LayoutDashboard', 'MessageSquare', 'Video', 'Mail',
-  'Monitor', 'MonitorDot', 'Shield', 'GraduationCap', 'Users', 'KeyRound',
-  'Activity', 'BarChart2', 'Zap', 'Database', 'Cloud', 'Lock', 'Bell',
-  'Code', 'Terminal', 'Cpu', 'Server', 'Wifi', 'Phone', 'Headphones',
-]
-
-const COLOR_PALETTE = [
-  { label: 'Default',   value: null },
-  { label: 'Blue',      value: '#2B6CB0' },
-  { label: 'Teal',      value: '#00A4A6' },
-  { label: 'Green',     value: '#2F855A' },
-  { label: 'Lime',      value: '#6B8E23' },
-  { label: 'Purple',    value: '#6B46C1' },
-  { label: 'Pink',      value: '#B83280' },
-  { label: 'Red',       value: '#C53030' },
-  { label: 'Orange',    value: '#C05621' },
-  { label: 'Yellow',    value: '#B7791F' },
-  { label: 'Slate',     value: '#4A5568' },
-  { label: 'Indigo',    value: '#3C366B' },
-  { label: 'Cyan',      value: '#086F83' },
-]
+// ── Tool Modal ────────────────────────────────────────────────────────────────
+// Add or edit a tool in the self-admin section.
+// `hideCategory` is set when using the row layout, since rows act as categories.
 
 function ToolModal({ tool, defaultCategory, onClose, hideCategory = false }) {
-  const categories = useAppStore((s) => s.selfAdminCategories)
-  const addTool = useAppStore((s) => s.addSelfAdminTool)
-  const updateTool = useAppStore((s) => s.updateSelfAdminTool)
-  const deleteTool = useAppStore((s) => s.deleteSelfAdminTool)
+  const categories  = useAppStore((s) => s.selfAdminCategories)
+  const addTool     = useAppStore((s) => s.addSelfAdminTool)
+  const updateTool  = useAppStore((s) => s.updateSelfAdminTool)
+  const deleteTool  = useAppStore((s) => s.deleteSelfAdminTool)
 
   const isEdit = !!tool?.id
 
   const [form, setForm] = useState({
-    name: tool?.name || '',
-    url: tool?.url || '',
-    icon: tool?.icon || 'Globe',
-    color: tool?.color || null,
-    category: tool?.category || defaultCategory || categories[0] || '',
+    name:        tool?.name        || '',
+    url:         tool?.url         || '',
+    icon:        tool?.icon        || 'Globe',
+    color:       tool?.color       || null,
+    category:    tool?.category    || defaultCategory || categories[0] || '',
     description: tool?.description || '',
   })
 
@@ -50,13 +32,10 @@ function ToolModal({ tool, defaultCategory, onClose, hideCategory = false }) {
   const handleSubmit = (e) => {
     e.preventDefault()
     if (!form.name.trim() || !form.url.trim()) return
-    const toolData = { ...form }
-    if (!toolData.url.startsWith('http')) toolData.url = 'https://' + toolData.url
-    if (isEdit) {
-      updateTool(tool.id, toolData)
-    } else {
-      addTool(toolData)
-    }
+    const data = { ...form }
+    if (!data.url.startsWith('http')) data.url = 'https://' + data.url
+    if (isEdit) updateTool(tool.id, data)
+    else        addTool(data)
     onClose()
   }
 
@@ -163,7 +142,10 @@ function ToolModal({ tool, defaultCategory, onClose, hideCategory = false }) {
                     key={label}
                     type="button"
                     className={`color-swatch${isSelected ? ' color-swatch--selected' : ''}`}
-                    style={{ background: value || 'var(--color-primary-light)', border: value ? `2px solid ${value}` : '2px solid var(--color-border)' }}
+                    style={{
+                      background: value || 'var(--color-primary-light)',
+                      border: value ? `2px solid ${value}` : '2px solid var(--color-border)',
+                    }}
                     onClick={() => set('color', value)}
                     title={label}
                   >
@@ -176,18 +158,12 @@ function ToolModal({ tool, defaultCategory, onClose, hideCategory = false }) {
 
           <div className="modal-footer">
             {isEdit && (
-              <button
-                type="button"
-                className="btn btn-danger btn-sm"
-                onClick={handleDelete}
-              >
+              <button type="button" className="btn btn-danger btn-sm" onClick={handleDelete}>
                 Delete
               </button>
             )}
             <div style={{ flex: 1 }} />
-            <button type="button" className="btn btn-secondary" onClick={onClose}>
-              Cancel
-            </button>
+            <button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button>
             <button type="submit" className="btn btn-primary">
               {isEdit ? 'Save Changes' : 'Add Tool'}
             </button>
@@ -198,30 +174,30 @@ function ToolModal({ tool, defaultCategory, onClose, hideCategory = false }) {
   )
 }
 
+// ── Category-based Tool Grid ──────────────────────────────────────────────────
+// Used when no rows exist. Groups tools by category with collapsible sections.
+
 function SelfAdminToolGrid({ searchQuery = '', onEditTool, onSelectTool, selectedToolId }) {
   const categories = useAppStore((s) => s.selfAdminCategories)
-  const tools = useAppStore((s) => s.selfAdminTools)
-  const reorderCategories = useAppStore((s) => s.reorderSelfAdminCategories)
+  const tools      = useAppStore((s) => s.selfAdminTools)
   const [collapsed, setCollapsed] = useState({})
 
   const toggleCategory = (cat) => {
     setCollapsed((prev) => ({ ...prev, [cat]: !prev[cat] }))
   }
 
-  const filteredTools = (cat) => {
+  const filterTools = (cat) => {
     const catTools = tools.filter((t) => t.category === cat)
     if (!searchQuery.trim()) return catTools
     const q = searchQuery.toLowerCase()
     return catTools.filter(
-      (t) =>
-        t.name.toLowerCase().includes(q) ||
-        (t.description || '').toLowerCase().includes(q)
+      (t) => t.name.toLowerCase().includes(q) || (t.description || '').toLowerCase().includes(q)
     )
   }
 
   const visibleCategories = categories.filter((cat) => {
     if (!searchQuery.trim()) return true
-    return filteredTools(cat).length > 0
+    return filterTools(cat).length > 0
   })
 
   if (visibleCategories.length === 0) {
@@ -235,7 +211,7 @@ function SelfAdminToolGrid({ searchQuery = '', onEditTool, onSelectTool, selecte
   return (
     <div className="tool-grid-container">
       {visibleCategories.map((cat) => {
-        const catTools = filteredTools(cat)
+        const catTools = filterTools(cat)
         return (
           <section key={cat} className="tool-category-section">
             <div className="tool-category-header">
@@ -245,7 +221,7 @@ function SelfAdminToolGrid({ searchQuery = '', onEditTool, onSelectTool, selecte
                 type="button"
               >
                 <span className="tool-category-chevron">
-                  {collapsed[cat] ? <LucideIcons.ChevronRight size={15} /> : <LucideIcons.ChevronDown size={15} />}
+                  {collapsed[cat] ? <ChevronRight size={15} /> : <ChevronDown size={15} />}
                 </span>
                 <h2 className="tool-category-name">{cat}</h2>
                 <span className="tool-category-count">{catTools.length}</span>
@@ -254,52 +230,15 @@ function SelfAdminToolGrid({ searchQuery = '', onEditTool, onSelectTool, selecte
 
             {!collapsed[cat] && (
               <div className="tool-cards-grid">
-                {catTools.map((tool) => {
-                  const IconComponent = LucideIcons[tool.icon] || LucideIcons.Globe
-                  const cardStyle = tool.color ? {
-                    '--card-color': tool.color,
-                    background: `${tool.color}18`,
-                    borderColor: `${tool.color}55`,
-                  } : {}
-                  const iconStyle = tool.color ? {
-                    background: `${tool.color}30`,
-                    color: tool.color,
-                  } : {}
-
-                  return (
-                    <div
-                      key={tool.id}
-                      className={`tool-card card${selectedToolId === tool.id ? ' tool-card--selected' : ''}${tool.color ? ' tool-card--colored' : ''}`}
-                      style={cardStyle}
-                      onClick={() => onSelectTool && onSelectTool(tool)}
-                      role="button"
-                      tabIndex={0}
-                      title={tool.name}
-                    >
-                      <div className="tool-card-icon" style={iconStyle}>
-                        <IconComponent size={28} strokeWidth={1.5} />
-                      </div>
-                      <div className="tool-card-body">
-                        <span className="tool-card-name">{tool.name}</span>
-                        {tool.description && (
-                          <span className="tool-card-desc">{tool.description}</span>
-                        )}
-                      </div>
-                      {onEditTool && (
-                        <button
-                          className="tool-card-edit btn btn-ghost btn-sm"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            onEditTool(tool)
-                          }}
-                          title="Edit tool"
-                        >
-                          <LucideIcons.Pencil size={13} />
-                        </button>
-                      )}
-                    </div>
-                  )
-                })}
+                {catTools.map((tool) => (
+                  <ToolCard
+                    key={tool.id}
+                    tool={tool}
+                    onSelect={onSelectTool}
+                    onEdit={onEditTool}
+                    selected={tool.id === selectedToolId}
+                  />
+                ))}
                 <button
                   className="tool-add-card"
                   onClick={() => onEditTool && onEditTool(null, cat)}
@@ -317,26 +256,37 @@ function SelfAdminToolGrid({ searchQuery = '', onEditTool, onSelectTool, selecte
   )
 }
 
-export default function SelfAdminDashboard() {
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedTool, setSelectedTool] = useState(null)
-  const [modalTool, setModalTool] = useState(null)
-  const [modalCategory, setModalCategory] = useState(null)
-  const [showModal, setShowModal] = useState(false)
-  const [useRowLayout, setUseRowLayout] = useState(false)
-  const [selectedRowForAddingTool, setSelectedRowForAddingTool] = useState(null)
-  const [editingRowId, setEditingRowId] = useState(null)
-  const [editingRowName, setEditingRowName] = useState('')
+// ── SelfAdminDashboard Page ───────────────────────────────────────────────────
 
-  const tools = useAppStore((s) => s.selfAdminTools)
-  const rows = useAppStore((s) => s.selfAdminRows)
-  const addSelfAdminRow = useAppStore((s) => s.addSelfAdminRow)
+export default function SelfAdminDashboard() {
+  const tools            = useAppStore((s) => s.selfAdminTools)
+  const rows             = useAppStore((s) => s.selfAdminRows)
+  const addSelfAdminRow  = useAppStore((s) => s.addSelfAdminRow)
   const renameSelfAdminRow = useAppStore((s) => s.renameSelfAdminRow)
   const deleteSelfAdminRow = useAppStore((s) => s.deleteSelfAdminRow)
 
+  const [searchQuery, setSearchQuery]   = useState('')
+  const [selectedTool, setSelectedTool] = useState(null)
+
+  // Modal state
+  const [modalTool, setModalTool]         = useState(null)
+  const [modalCategory, setModalCategory] = useState(null)
+  const [showModal, setShowModal]         = useState(false)
+
+  // Inline row rename state
+  const [editingRowId, setEditingRowId]     = useState(null)
+  const [editingRowName, setEditingRowName] = useState('')
+
+  // Keep selected tool in sync with the store
   const liveSelectedTool = selectedTool
     ? tools.find((t) => t.id === selectedTool.id) || null
     : null
+
+  // Rows exist → use row layout; otherwise fall back to category grid
+  const hasRows    = rows.length > 0
+  const displayMode = hasRows ? 'rows' : 'categories'
+
+  // ── Handlers ────────────────────────────────────────────────────────────
 
   const handleEditTool = (tool, category = null) => {
     setModalTool(tool)
@@ -350,22 +300,20 @@ export default function SelfAdminDashboard() {
     setModalCategory(null)
   }
 
+  const handleAddRow = () => {
+    addSelfAdminRow(`Row ${rows.length + 1}`)
+  }
+
+  const handleAddToolToRow = (rowId) => {
+    setModalTool(null)
+    setModalCategory(rowId)   // row ID acts as the tool's category
+    setShowModal(true)
+  }
+
   const handleDeleteRow = (rowId) => {
     if (window.confirm('Delete this row and all tools in it?')) {
       deleteSelfAdminRow(rowId)
     }
-  }
-
-  const handleAddRow = () => {
-    addSelfAdminRow(`Row ${rows.length + 1}`)
-    setUseRowLayout(true)
-  }
-
-  const handleAddToolToRow = (rowId) => {
-    setSelectedRowForAddingTool(rowId)
-    setModalTool(null)
-    setModalCategory(rowId) // Use row ID as category
-    setShowModal(true)
   }
 
   const handleRenameRow = (rowId, currentName) => {
@@ -374,16 +322,10 @@ export default function SelfAdminDashboard() {
   }
 
   const handleSaveRowName = (rowId) => {
-    if (editingRowName.trim()) {
-      renameSelfAdminRow(rowId, editingRowName)
-    }
+    if (editingRowName.trim()) renameSelfAdminRow(rowId, editingRowName)
     setEditingRowId(null)
     setEditingRowName('')
   }
-
-  // Check if we should use row layout (if rows exist)
-  const hasRows = rows.length > 0
-  const displayMode = useRowLayout || hasRows ? 'rows' : 'categories'
 
   return (
     <div className="dashboard">
@@ -409,27 +351,21 @@ export default function SelfAdminDashboard() {
           )}
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
-          <button
-            className="btn btn-primary btn-sm"
-            onClick={handleAddRow}
-          >
-            <Plus size={15} />
-            Add Row
+          <button className="btn btn-primary btn-sm" onClick={handleAddRow}>
+            <Plus size={15} /> Add Row
           </button>
-          <button
-            className="btn btn-primary btn-sm"
-            onClick={() => handleEditTool(null, null)}
-          >
-            <Plus size={15} />
-            Add Tool
+          <button className="btn btn-primary btn-sm" onClick={() => handleEditTool(null, null)}>
+            <Plus size={15} /> Add Tool
           </button>
         </div>
       </div>
 
-      {/* Split layout */}
+      {/* Split layout: tool grid left, details panel right */}
       <div className="dashboard-split">
         <div className="dashboard-left">
-          {displayMode === 'rows' && hasRows ? (
+
+          {/* Row layout */}
+          {displayMode === 'rows' && (
             <div className="selfadmin-rows">
               {rows.map((row) => {
                 const rowTools = tools.filter((t) => t.category === row.id)
@@ -444,11 +380,8 @@ export default function SelfAdminDashboard() {
                           onChange={(e) => setEditingRowName(e.target.value)}
                           onBlur={() => handleSaveRowName(row.id)}
                           onKeyDown={(e) => {
-                            if (e.key === 'Enter') handleSaveRowName(row.id)
-                            if (e.key === 'Escape') {
-                              setEditingRowId(null)
-                              setEditingRowName('')
-                            }
+                            if (e.key === 'Enter')  handleSaveRowName(row.id)
+                            if (e.key === 'Escape') { setEditingRowId(null); setEditingRowName('') }
                           }}
                           autoFocus
                         />
@@ -481,6 +414,7 @@ export default function SelfAdminDashboard() {
                         </button>
                       </div>
                     </div>
+
                     <div className="selfadmin-row-content">
                       {rowTools.length === 0 ? (
                         <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', padding: '40px 20px' }}>
@@ -488,45 +422,15 @@ export default function SelfAdminDashboard() {
                         </p>
                       ) : (
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px', padding: '12px' }}>
-                          {rowTools.map((tool) => {
-                            const ToolIcon = LucideIcons[tool.icon] || LucideIcons.Globe
-                            const cardStyle = tool.color ? {
-                              background: `${tool.color}18`,
-                              borderColor: `${tool.color}55`,
-                            } : {}
-                            const iconStyle = tool.color ? {
-                              background: `${tool.color}30`,
-                              color: tool.color,
-                            } : {}
-                            return (
-                              <div
-                                key={tool.id}
-                                className="tool-card card"
-                                style={cardStyle}
-                                onClick={() => setSelectedTool(tool)}
-                              >
-                                <div className="tool-card-icon" style={iconStyle}>
-                                  <ToolIcon size={24} strokeWidth={1.5} />
-                                </div>
-                                <div className="tool-card-body">
-                                  <span className="tool-card-name">{tool.name}</span>
-                                  {tool.description && (
-                                    <span className="tool-card-desc">{tool.description}</span>
-                                  )}
-                                </div>
-                                <button
-                                  className="tool-card-edit btn btn-ghost btn-sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    handleEditTool(tool)
-                                  }}
-                                  title="Edit tool"
-                                >
-                                  <LucideIcons.Pencil size={13} />
-                                </button>
-                              </div>
-                            )
-                          })}
+                          {rowTools.map((tool) => (
+                            <ToolCard
+                              key={tool.id}
+                              tool={tool}
+                              onSelect={setSelectedTool}
+                              onEdit={handleEditTool}
+                              selected={liveSelectedTool?.id === tool.id}
+                            />
+                          ))}
                         </div>
                       )}
                     </div>
@@ -534,7 +438,10 @@ export default function SelfAdminDashboard() {
                 )
               })}
             </div>
-          ) : (
+          )}
+
+          {/* Category grid (shown when no rows exist) */}
+          {displayMode === 'categories' && (
             <SelfAdminToolGrid
               searchQuery={searchQuery}
               onEditTool={handleEditTool}
@@ -542,7 +449,9 @@ export default function SelfAdminDashboard() {
               selectedToolId={liveSelectedTool?.id}
             />
           )}
+
         </div>
+
         <div className="dashboard-right">
           <QRGPanel tool={liveSelectedTool} />
         </div>

@@ -1,7 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Plus, X, Pencil, GripVertical, Trash2, Settings } from 'lucide-react'
-import useAppStore from '../store/useAppStore.js'
-import TaskDetailsPanel from '../components/TaskDetailsPanel.jsx'
 import * as LucideIcons from 'lucide-react'
 import {
   DndContext,
@@ -11,48 +9,32 @@ import {
   useSensors,
 } from '@dnd-kit/core'
 import {
+  arrayMove,
   useSortable,
   SortableContext,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import useAppStore from '../store/useAppStore.js'
+import TaskDetailsPanel from '../components/TaskDetailsPanel.jsx'
+import { ICON_OPTIONS, COLOR_PALETTE } from '../constants/ui.js'
 
-const ICON_OPTIONS = [
-  'Globe', 'Ticket', 'LayoutDashboard', 'MessageSquare', 'Video', 'Mail',
-  'Monitor', 'MonitorDot', 'Shield', 'GraduationCap', 'Users', 'KeyRound',
-  'Activity', 'BarChart2', 'Zap', 'Database', 'Cloud', 'Lock', 'Bell',
-  'Code', 'Terminal', 'Cpu', 'Server', 'Wifi', 'Phone', 'Headphones',
-]
-
-const COLOR_PALETTE = [
-  { label: 'Default',   value: null },
-  { label: 'Blue',      value: '#2B6CB0' },
-  { label: 'Teal',      value: '#00A4A6' },
-  { label: 'Green',     value: '#2F855A' },
-  { label: 'Lime',      value: '#6B8E23' },
-  { label: 'Purple',    value: '#6B46C1' },
-  { label: 'Pink',      value: '#B83280' },
-  { label: 'Red',       value: '#C53030' },
-  { label: 'Orange',    value: '#C05621' },
-  { label: 'Yellow',    value: '#B7791F' },
-  { label: 'Slate',     value: '#4A5568' },
-  { label: 'Indigo',    value: '#3C366B' },
-  { label: 'Cyan',      value: '#086F83' },
-]
+// ── Task Modal ────────────────────────────────────────────────────────────────
+// Add or edit a task. `columnId` is required when adding a new task.
 
 function TaskModal({ task, columnId, onClose }) {
-  const addTask = useAppStore((s) => s.addWorkBoardTool)
+  const addTask    = useAppStore((s) => s.addWorkBoardTool)
   const updateTask = useAppStore((s) => s.updateWorkBoardTool)
   const deleteTask = useAppStore((s) => s.deleteWorkBoardTool)
 
   const isEdit = !!task?.id
 
   const [form, setForm] = useState({
-    name: task?.name || '',
-    icon: task?.icon || 'Globe',
-    color: task?.color || null,
+    name:        task?.name        || '',
+    icon:        task?.icon        || 'Globe',
+    color:       task?.color       || null,
     description: task?.description || '',
-    qrg: task?.qrg || '',
+    qrg:         task?.qrg         || '',
   })
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }))
@@ -60,12 +42,9 @@ function TaskModal({ task, columnId, onClose }) {
   const handleSubmit = (e) => {
     e.preventDefault()
     if (!form.name.trim()) return
-    const taskData = { ...form, columnId: columnId || task?.columnId }
-    if (isEdit) {
-      updateTask(task.id, taskData)
-    } else {
-      addTask(taskData)
-    }
+    const payload = { ...form, columnId: columnId || task?.columnId }
+    if (isEdit) updateTask(task.id, payload)
+    else        addTask(payload)
     onClose()
   }
 
@@ -157,7 +136,10 @@ function TaskModal({ task, columnId, onClose }) {
                     key={label}
                     type="button"
                     className={`color-swatch${isSelected ? ' color-swatch--selected' : ''}`}
-                    style={{ background: value || 'var(--color-primary-light)', border: value ? `2px solid ${value}` : '2px solid var(--color-border)' }}
+                    style={{
+                      background: value || 'var(--color-primary-light)',
+                      border: value ? `2px solid ${value}` : '2px solid var(--color-border)',
+                    }}
                     onClick={() => set('color', value)}
                     title={label}
                   >
@@ -170,18 +152,12 @@ function TaskModal({ task, columnId, onClose }) {
 
           <div className="modal-footer">
             {isEdit && (
-              <button
-                type="button"
-                className="btn btn-danger btn-sm"
-                onClick={handleDelete}
-              >
+              <button type="button" className="btn btn-danger btn-sm" onClick={handleDelete}>
                 Delete
               </button>
             )}
             <div style={{ flex: 1 }} />
-            <button type="button" className="btn btn-secondary" onClick={onClose}>
-              Cancel
-            </button>
+            <button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button>
             <button type="submit" className="btn btn-primary">
               {isEdit ? 'Save Changes' : 'Add Task'}
             </button>
@@ -192,85 +168,7 @@ function TaskModal({ task, columnId, onClose }) {
   )
 }
 
-function SortableWorkBoardTask({ task, onEdit, onSelect, onDelete }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: task.id })
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  }
-
-  const IconComponent = LucideIcons[task.icon] || LucideIcons.Globe
-  const cardStyle = task.color ? {
-    '--card-color': task.color,
-    background: `${task.color}18`,
-    borderColor: `${task.color}55`,
-  } : {}
-  const iconStyle = task.color ? {
-    background: `${task.color}30`,
-    color: task.color,
-  } : {}
-
-  const handleDelete = (e) => {
-    e.stopPropagation()
-    if (window.confirm(`Delete task "${task.name}"?`)) {
-      onDelete(task.id)
-    }
-  }
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={`workboard-tool card${task.color ? ' workboard-tool--colored' : ''}`}
-      onClick={() => onSelect && onSelect(task)}
-    >
-      <div className="workboard-tool-handle" {...attributes} {...listeners}>
-        <GripVertical size={14} />
-      </div>
-      <div className="workboard-tool-icon" style={iconStyle}>
-        <IconComponent size={24} strokeWidth={1.5} />
-      </div>
-      <div className="workboard-tool-body">
-        <span className="workboard-tool-name">{task.name}</span>
-        {task.description && (
-          <span className="workboard-tool-desc">{task.description}</span>
-        )}
-      </div>
-      <div className="workboard-tool-actions">
-        {onEdit && (
-          <button
-            className="workboard-tool-edit btn btn-ghost btn-sm"
-            onClick={(e) => {
-              e.stopPropagation()
-              onEdit(task)
-            }}
-            title="Edit task"
-          >
-            <Pencil size={12} />
-          </button>
-        )}
-        {onDelete && (
-          <button
-            className="workboard-tool-delete btn btn-ghost btn-sm"
-            onClick={handleDelete}
-            title="Delete task"
-          >
-            <Trash2 size={12} />
-          </button>
-        )}
-      </div>
-    </div>
-  )
-}
+// ── Column Colour Picker ──────────────────────────────────────────────────────
 
 function ColumnColorPicker({ column, onSelectColor, onClose }) {
   return (
@@ -297,10 +195,7 @@ function ColumnColorPicker({ column, onSelectColor, onClose }) {
                     borderRadius: '6px',
                     cursor: 'pointer',
                   }}
-                  onClick={() => {
-                    onSelectColor(value)
-                    onClose()
-                  }}
+                  onClick={() => { onSelectColor(value); onClose() }}
                   title={label}
                 >
                   {isSelected && <span className="color-swatch-check">✓</span>}
@@ -314,8 +209,90 @@ function ColumnColorPicker({ column, onSelectColor, onClose }) {
   )
 }
 
-function WorkBoardColumn({ column, tasks, onAddTask, onEditTask, onSelectTask, onRenameColumn, onDeleteColumn, isEditingName, editingName, onNameChange, onNameSave, onDeleteTask, onSetColumnColor }) {
-  const columnTasks = tasks.filter((t) => t.columnId === column.id).sort((a, b) => (a.position || 0) - (b.position || 0))
+// ── Sortable Task Card ────────────────────────────────────────────────────────
+
+function SortableWorkBoardTask({ task, onEdit, onSelect, onDelete }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: task.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  }
+
+  const IconComponent = LucideIcons[task.icon] || LucideIcons.Globe
+  const cardStyle = task.color ? {
+    '--card-color': task.color,
+    background:   `${task.color}18`,
+    borderColor:  `${task.color}55`,
+  } : {}
+  const iconStyle = task.color ? {
+    background: `${task.color}30`,
+    color:      task.color,
+  } : {}
+
+  const handleDelete = (e) => {
+    e.stopPropagation()
+    if (window.confirm(`Delete task "${task.name}"?`)) onDelete(task.id)
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`workboard-tool card${task.color ? ' workboard-tool--colored' : ''}`}
+      onClick={() => onSelect && onSelect(task)}
+    >
+      <div className="workboard-tool-handle" {...attributes} {...listeners}>
+        <GripVertical size={14} />
+      </div>
+      <div className="workboard-tool-icon" style={iconStyle}>
+        <IconComponent size={24} strokeWidth={1.5} />
+      </div>
+      <div className="workboard-tool-body">
+        <span className="workboard-tool-name">{task.name}</span>
+        {task.description && (
+          <span className="workboard-tool-desc">{task.description}</span>
+        )}
+      </div>
+      <div className="workboard-tool-actions">
+        {onEdit && (
+          <button
+            className="workboard-tool-edit btn btn-ghost btn-sm"
+            onClick={(e) => { e.stopPropagation(); onEdit(task) }}
+            title="Edit task"
+          >
+            <Pencil size={12} />
+          </button>
+        )}
+        {onDelete && (
+          <button
+            className="workboard-tool-delete btn btn-ghost btn-sm"
+            onClick={handleDelete}
+            title="Delete task"
+          >
+            <Trash2 size={12} />
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ── Board Column ──────────────────────────────────────────────────────────────
+
+function WorkBoardColumn({
+  column, tasks,
+  onAddTask, onEditTask, onSelectTask,
+  onRenameColumn, onDeleteColumn,
+  isEditingName, editingName, onNameChange, onNameSave,
+  onDeleteTask, onSetColumnColor,
+}) {
+  const columnTasks = tasks
+    .filter((t) => t.columnId === column.id)
+    .sort((a, b) => (a.position || 0) - (b.position || 0))
+
   const [showColorPicker, setShowColorPicker] = useState(false)
 
   const handleDeleteColumn = () => {
@@ -373,6 +350,7 @@ function WorkBoardColumn({ column, tasks, onAddTask, onEditTask, onSelectTask, o
           </button>
         </div>
       </div>
+
       <SortableContext items={columnTasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
         <div className="workboard-column-tools">
           {columnTasks.map((task) => (
@@ -406,32 +384,40 @@ function WorkBoardColumn({ column, tasks, onAddTask, onEditTask, onSelectTask, o
   )
 }
 
+// ── WorkBoard Page ────────────────────────────────────────────────────────────
+
 export default function WorkBoard() {
-  const columns = useAppStore((s) => s.workBoardColumns)
-  const tasks = useAppStore((s) => s.workBoardTools)
-  const moveWorkBoardTool = useAppStore((s) => s.moveWorkBoardTool)
-  const addWorkBoardColumn = useAppStore((s) => s.addWorkBoardColumn)
+  const columns              = useAppStore((s) => s.workBoardColumns)
+  const tasks                = useAppStore((s) => s.workBoardTools)
+  const addWorkBoardColumn   = useAppStore((s) => s.addWorkBoardColumn)
   const deleteWorkBoardColumn = useAppStore((s) => s.deleteWorkBoardColumn)
   const renameWorkBoardColumn = useAppStore((s) => s.renameWorkBoardColumn)
-  const deleteWorkBoardTool = useAppStore((s) => s.deleteWorkBoardTool)
+  const deleteWorkBoardTool  = useAppStore((s) => s.deleteWorkBoardTool)
   const setWorkBoardColumnColor = useAppStore((s) => s.setWorkBoardColumnColor)
+  const reorderWorkBoardTools = useAppStore((s) => s.reorderWorkBoardTools)
 
-  const [modalTask, setModalTask] = useState(null)
+  // Modal state
+  const [modalTask, setModalTask]       = useState(null)
   const [modalColumnId, setModalColumnId] = useState(null)
-  const [showModal, setShowModal] = useState(false)
+  const [showModal, setShowModal]       = useState(false)
+
+  // Selected task for the details panel
   const [selectedTask, setSelectedTask] = useState(null)
-  const [containerWidth, setContainerWidth] = useState(0)
-  const [editingColumnId, setEditingColumnId] = useState(null)
+
+  // Inline column rename state
+  const [editingColumnId, setEditingColumnId]     = useState(null)
   const [editingColumnName, setEditingColumnName] = useState('')
-  const dividerRef = useRef(null)
-  const containerRef = useRef(null)
+
+  // Resizable right panel
+  const containerRef    = useRef(null)
+  const [rightPanelWidth, setRightPanelWidth] = useState(0)
   const [isDraggingDivider, setIsDraggingDivider] = useState(false)
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
   )
 
-  // Initialize with default columns if empty
+  // Seed default columns on first load
   useEffect(() => {
     if (columns.length === 0) {
       addWorkBoardColumn('Personal')
@@ -439,13 +425,39 @@ export default function WorkBoard() {
     }
   }, [])
 
-  // Calculate container width for 50/50 split
+  // Set initial right-panel width to 50% of container
   useEffect(() => {
-    if (containerRef.current) {
-      const width = containerRef.current.getBoundingClientRect().width
-      setContainerWidth(width)
+    if (containerRef.current && rightPanelWidth === 0) {
+      setRightPanelWidth(containerRef.current.getBoundingClientRect().width / 2)
     }
-  }, [containerRef])
+  }, [])
+
+  // Divider drag listeners
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!isDraggingDivider || !containerRef.current) return
+      const rect = containerRef.current.getBoundingClientRect()
+      const desired = rect.right - e.clientX
+      setRightPanelWidth(Math.max(200, Math.min(desired, rect.width - 250)))
+    }
+    const handleMouseUp = () => setIsDraggingDivider(false)
+
+    if (isDraggingDivider) {
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', handleMouseUp)
+    }
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [isDraggingDivider])
+
+  // Keep selected-task details in sync with store
+  const liveSelectedTask = selectedTask
+    ? tasks.find((t) => t.id === selectedTask.id) || null
+    : null
+
+  // ── Handlers ──────────────────────────────────────────────────────────────
 
   const handleAddTask = (columnId) => {
     setModalColumnId(columnId)
@@ -464,72 +476,25 @@ export default function WorkBoard() {
     setModalColumnId(null)
   }
 
-  const handleDragEnd = (event) => {
-    const { active, over } = event
-
-    if (!over) return
-    if (active.id === over.id) return
+  const handleDragEnd = ({ active, over }) => {
+    if (!over || active.id === over.id) return
 
     const activeTask = tasks.find((t) => t.id === active.id)
-    if (!activeTask) return
+    const overTask   = tasks.find((t) => t.id === over.id)
+    if (!activeTask || !overTask) return
 
-    const overTask = tasks.find((t) => t.id === over.id)
-    if (!overTask) return
-
-    // Only allow reordering within the same column - disable cross-column dragging
+    // Only reorder within the same column — cross-column drag is disabled
     if (activeTask.columnId !== overTask.columnId) return
 
-    const targetColumnId = activeTask.columnId
-    const targetColumnTasks = tasks
-      .filter((t) => t.columnId === targetColumnId && t.id !== activeTask.id)
+    const columnTasks = tasks
+      .filter((t) => t.columnId === activeTask.columnId)
       .sort((a, b) => (a.position || 0) - (b.position || 0))
 
-    const overIndex = targetColumnTasks.findIndex((t) => t.id === over.id)
-    const position = overIndex >= 0 ? overIndex : targetColumnTasks.length
-
-    // Note: Reordering within column logic would go here
-    // For now, we're just preventing cross-column moves
+    const oldIndex = columnTasks.findIndex((t) => t.id === active.id)
+    const newIndex = columnTasks.findIndex((t) => t.id === over.id)
+    const reordered = arrayMove(columnTasks, oldIndex, newIndex)
+    reorderWorkBoardTools(activeTask.columnId, reordered.map((t) => t.id))
   }
-
-  const handleDividerMouseDown = () => {
-    setIsDraggingDivider(true)
-  }
-
-  // Compute the right panel width (50% of container by default)
-  const rightPanelWidth = Math.max(200, Math.min(containerWidth / 2, containerWidth - 250))
-
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      if (!isDraggingDivider || !containerRef.current) return
-
-      const containerRect = containerRef.current.getBoundingClientRect()
-      const newWidth = containerRect.right - e.clientX
-      const minWidth = 200
-      const maxWidth = containerRect.width - 250
-
-      if (newWidth >= minWidth && newWidth <= maxWidth) {
-        setContainerWidth(containerRect.width - (containerRect.width - newWidth))
-      }
-    }
-
-    const handleMouseUp = () => {
-      setIsDraggingDivider(false)
-    }
-
-    if (isDraggingDivider) {
-      document.addEventListener('mousemove', handleMouseMove)
-      document.addEventListener('mouseup', handleMouseUp)
-    }
-
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove)
-      document.removeEventListener('mouseup', handleMouseUp)
-    }
-  }, [isDraggingDivider, containerWidth])
-
-  const liveSelectedTask = selectedTask
-    ? tasks.find((t) => t.id === selectedTask.id) || null
-    : null
 
   const handleRenameColumn = (colId, currentName) => {
     setEditingColumnId(colId)
@@ -537,43 +502,42 @@ export default function WorkBoard() {
   }
 
   const handleSaveColumnName = (colId) => {
-    if (editingColumnName.trim()) {
-      renameWorkBoardColumn(colId, editingColumnName)
-    }
+    if (editingColumnName.trim()) renameWorkBoardColumn(colId, editingColumnName)
     setEditingColumnId(null)
     setEditingColumnName('')
   }
+
+  // ── Empty state ────────────────────────────────────────────────────────────
 
   if (columns.length === 0) {
     return (
       <div className="workboard-empty">
         <p>No columns yet. Create one to get started.</p>
-        <button
-          className="btn btn-primary"
-          onClick={() => addWorkBoardColumn('New Column')}
-        >
-          <Plus size={18} />
-          Create Column
+        <button className="btn btn-primary" onClick={() => addWorkBoardColumn('New Column')}>
+          <Plus size={18} /> Create Column
         </button>
       </div>
     )
   }
 
+  const panelWidth = rightPanelWidth || 400
+
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <div className="workboard" ref={containerRef}>
+
         <div className="workboard-header">
           <button
             className="btn btn-primary btn-sm"
             onClick={() => addWorkBoardColumn('New Column')}
           >
-            <Plus size={15} />
-            Add Column
+            <Plus size={15} /> Add Column
           </button>
         </div>
 
         <div className="workboard-split">
-          <div className="workboard-left" style={{ flex: `1 1 calc(100% - ${rightPanelWidth}px)` }}>
+          {/* Column area */}
+          <div className="workboard-left" style={{ flex: `1 1 calc(100% - ${panelWidth}px)` }}>
             <div className="workboard-columns">
               {columns.map((col) => (
                 <WorkBoardColumn
@@ -596,14 +560,15 @@ export default function WorkBoard() {
             </div>
           </div>
 
+          {/* Draggable divider */}
           <div
             className="workboard-divider"
-            ref={dividerRef}
-            onMouseDown={handleDividerMouseDown}
-            style={{ cursor: isDraggingDivider ? 'col-resize' : 'col-resize' }}
+            onMouseDown={() => setIsDraggingDivider(true)}
+            style={{ cursor: 'col-resize' }}
           />
 
-          <div className="workboard-right" style={{ flex: `0 0 ${rightPanelWidth}px` }}>
+          {/* Task details panel */}
+          <div className="workboard-right" style={{ flex: `0 0 ${panelWidth}px` }}>
             <TaskDetailsPanel task={liveSelectedTask} />
           </div>
         </div>
