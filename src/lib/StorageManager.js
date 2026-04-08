@@ -10,7 +10,7 @@
 
 const STORAGE_CONFIG = {
   dbName: 'hdeskWikiStorage',
-  version: 1,
+  version: 2, // Incremented to force schema upgrade
   booksStore: 'books',
   chapterStore: 'chapters',
   indexStore: 'index',
@@ -227,6 +227,7 @@ class StorageManager {
 
   /**
    * Read chapter content (Notes.md)
+   * @param {string} bookId
    * @param {string} chapterId
    * @returns {Promise<string>} Markdown content
    */
@@ -234,8 +235,17 @@ class StorageManager {
     const chapter = await this.getChapter(bookId, chapterId)
     if (!chapter) throw new Error(`Chapter not found: ${chapterId}`)
 
-    const notesPath = `${chapter.path}/Notes.md`
-    return this._readFile(notesPath)
+    // First try to read from files store
+    try {
+      const notesPath = `${chapter.path}/Notes.md`
+      const content = await this._readFile(notesPath)
+      if (content) return content
+    } catch (err) {
+      console.warn('Failed to read from files store, checking chapter object:', err)
+    }
+
+    // Fallback: content stored in chapter object
+    return chapter.content || ''
   }
 
   /**
@@ -250,10 +260,18 @@ class StorageManager {
     if (!chapter) throw new Error(`Chapter not found: ${chapterId}`)
 
     const notesPath = `${chapter.path}/Notes.md`
-    await this._writeFile(notesPath, content)
 
-    // Update chapter metadata
+    try {
+      // Try to save to files store
+      await this._writeFile(notesPath, content)
+    } catch (err) {
+      console.warn('Failed to write to files store:', err)
+    }
+
+    // Always save content to chapter object as fallback
+    chapter.content = content
     chapter.updatedAt = new Date().toISOString()
+
     await this._writeToStore(STORAGE_CONFIG.chapterStore, {
       path: chapter.path,
       data: chapter,
@@ -468,14 +486,22 @@ class StorageManager {
       updatedAt: new Date().toISOString(),
     }
 
-    // Store in IndexedDB files store
+    // Store in IndexedDB files store (with error handling)
     return new Promise((resolve, reject) => {
-      const tx = this.db.transaction(['files'], 'readwrite')
-      const store = tx.objectStore('files')
-      const request = store.put(fileData)
+      try {
+        const tx = this.db.transaction(['files'], 'readwrite')
+        const store = tx.objectStore('files')
+        const request = store.put(fileData)
 
-      request.onerror = () => reject(request.error)
-      request.onsuccess = () => resolve(fileData)
+        request.onerror = () => {
+          console.warn('Failed to write file to IndexedDB:', request.error)
+          reject(request.error)
+        }
+        request.onsuccess = () => resolve(fileData)
+      } catch (err) {
+        console.warn('Transaction error writing file:', err)
+        reject(err)
+      }
     })
   }
 
@@ -486,14 +512,22 @@ class StorageManager {
     if (!this.db) await this.init()
 
     return new Promise((resolve, reject) => {
-      const tx = this.db.transaction(['files'], 'readonly')
-      const store = tx.objectStore('files')
-      const request = store.get(path)
+      try {
+        const tx = this.db.transaction(['files'], 'readonly')
+        const store = tx.objectStore('files')
+        const request = store.get(path)
 
-      request.onerror = () => reject(request.error)
-      request.onsuccess = () => {
-        const result = request.result
-        resolve(result ? result.content : '')
+        request.onerror = () => {
+          console.warn('Failed to read file from IndexedDB:', request.error)
+          reject(request.error)
+        }
+        request.onsuccess = () => {
+          const result = request.result
+          resolve(result ? result.content : '')
+        }
+      } catch (err) {
+        console.warn('Transaction error reading file:', err)
+        reject(err)
       }
     })
   }
