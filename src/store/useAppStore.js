@@ -503,18 +503,60 @@ const useAppStore = create(
       exportConfig: () => {
         const state = get()
         return JSON.stringify({
+          // Helpdesk Dashboard
           categories: state.categories,
           tools: state.tools,
+
+          // Self Administration
+          selfAdminCategories: state.selfAdminCategories,
+          selfAdminTools: state.selfAdminTools,
+          selfAdminRows: state.selfAdminRows,
+
+          // Work Board
+          workBoardColumns: state.workBoardColumns,
+          workBoardTools: state.workBoardTools,
+
+          // Documentation
           docs: state.docs,
+          docOrder: state.docOrder,
+
+          // User Settings
+          theme: state.theme,
+          lastLightTheme: state.lastLightTheme,
+          lastDarkTheme: state.lastDarkTheme,
+          customThemes: state.customThemes,
+          themeOverrides: state.themeOverrides,
+          uiScale: state.uiScale,
         }, null, 2)
       },
       importConfig: (json) => {
         try {
           const data = JSON.parse(json)
           set({
+            // Helpdesk Dashboard
             categories: data.categories || DEFAULT_CATEGORIES,
             tools: data.tools || DEFAULT_TOOLS,
+
+            // Self Administration
+            selfAdminCategories: data.selfAdminCategories || [],
+            selfAdminTools: data.selfAdminTools || [],
+            selfAdminRows: data.selfAdminRows || [],
+
+            // Work Board
+            workBoardColumns: data.workBoardColumns || [],
+            workBoardTools: data.workBoardTools || [],
+
+            // Documentation
             docs: data.docs || DEFAULT_DOCS,
+            docOrder: data.docOrder || {},
+
+            // User Settings
+            theme: data.theme || 'light',
+            lastLightTheme: data.lastLightTheme || 'light',
+            lastDarkTheme: data.lastDarkTheme || 'dark',
+            customThemes: data.customThemes || [],
+            themeOverrides: data.themeOverrides || {},
+            uiScale: data.uiScale || 1,
           })
           return true
         } catch {
