@@ -211,14 +211,46 @@ export default function WikiPage() {
 
             <div className="wiki-body">
               {isEditing ? (
-                <textarea
-                  className="wiki-editor"
-                  value={selectedDoc.content || ''}
-                  onChange={(e) => {
-                    useAppStore.getState().updateDoc(selectedDocId, { content: e.target.value })
-                  }}
-                  placeholder="Write your documentation here..."
-                />
+                <div className="wiki-editor-container">
+                  <div className="wiki-editor-pane">
+                    <div className="wiki-editor-label">Markdown Source</div>
+                    <textarea
+                      className="wiki-editor"
+                      ref={editorRef}
+                      value={selectedDoc.content || ''}
+                      onChange={(e) => {
+                        useAppStore.getState().updateDoc(selectedDocId, { content: e.target.value })
+                      }}
+                      placeholder="Write your documentation here...
+
+Markdown syntax examples:
+# Heading 1
+## Heading 2
+
+**bold text**
+*italic text*
+`code`
+
+- bullet points
+1. numbered list
+
+| Column 1 | Column 2 |
+|----------|----------|
+| Data     | Data     |
+
+[Link text](url)
+![Image alt](image-url)"
+                    />
+                  </div>
+                  <div className="wiki-preview-pane">
+                    <div className="wiki-editor-label">Live Preview</div>
+                    <div className="wiki-editor-preview">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {selectedDoc.content || ''}
+                      </ReactMarkdown>
+                    </div>
+                  </div>
+                </div>
               ) : (
                 <div className="wiki-markdown">
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>

@@ -160,31 +160,68 @@
   border-radius: 6px;
 }
 
-/* Markdown Editor */
-.wiki-editor {
-  width: 100%;
-  min-height: 400px;
-  padding: 16px;
+/* Markdown Editor - Split View */
+.wiki-editor-container {
+  display: flex;
+  gap: 16px;
+  height: 100%;
+  min-height: 500px;
+}
+
+.wiki-editor-pane,
+.wiki-preview-pane {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
   border: 1px solid var(--color-border);
   border-radius: 6px;
+  background-color: var(--color-surface);
+  overflow: hidden;
+}
+
+.wiki-editor-label {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.wiki-editor {
+  flex: 1;
+  padding: 16px;
+  border: none;
   background-color: var(--color-surface);
   color: var(--color-text);
   font-family: 'Monaco', 'Courier New', monospace;
   font-size: 14px;
   line-height: 1.6;
   resize: none;
+  overflow-y: auto;
 }
 
 .wiki-editor:focus {
   outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(var(--color-primary-rgb), 0.1);
+}
+
+.wiki-editor-preview {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  background-color: var(--color-bg);
+}
+
+.wiki-editor-preview > * {
+  max-width: 100%;
 }
 
 /* Markdown Rendering */
-.wiki-markdown {
-  max-width: 900px;
-  margin: 0 auto;
+.wiki-markdown,
+.wiki-editor-preview {
+  max-width: 100%;
   width: 100%;
 }
 
@@ -313,6 +350,23 @@
 }
 
 /* Responsive */
+@media (max-width: 1200px) {
+  .wiki-editor-container {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .wiki-editor-pane,
+  .wiki-preview-pane {
+    border-radius: 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .wiki-editor-pane {
+    border-right: none;
+  }
+}
+
 @media (max-width: 768px) {
   .wiki-page-container {
     flex-direction: column;
@@ -337,5 +391,9 @@
 
   .wiki-markdown {
     max-width: 100%;
+  }
+
+  .wiki-editor-container {
+    min-height: 600px;
   }
 }
