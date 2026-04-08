@@ -290,6 +290,28 @@
   font-weight: 600;
 }
 
+/* Images */
+.wiki-markdown img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+  margin: 16px 0;
+  border: 1px solid var(--color-border);
+  display: block;
+}
+
+.wiki-markdown figure {
+  margin: 16px 0;
+  text-align: center;
+}
+
+.wiki-markdown figcaption {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .wiki-page-container {

@@ -3,8 +3,8 @@
  * Displays wiki navigation, table of contents, and markdown content
  */
 
-import React, { useState, useMemo } from 'react'
-import { ChevronDown, ChevronRight, FileText, FolderOpen, Search, Edit2, Plus, Trash2 } from 'lucide-react'
+import React, { useState, useMemo, useRef } from 'react'
+import { ChevronDown, ChevronRight, FileText, FolderOpen, Search, Edit2, Plus, Trash2, Image as ImageIcon } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import useAppStore from '../store/useAppStore.js'
@@ -16,6 +16,8 @@ export default function WikiPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [expandedFolders, setExpandedFolders] = useState(new Set())
   const [isEditing, setIsEditing] = useState(false)
+  const imageInputRef = useRef(null)
+  const editorRef = useRef(null)
 
   // Get root-level docs (no parent)
   const rootDocs = useMemo(() => {
@@ -55,6 +57,26 @@ export default function WikiPage() {
   }, [docs, searchTerm])
 
   const selectedDoc = docs[selectedDocId]
+
+  // Handle image upload
+  const handleImageUpload = (e) => {
+    const file = e.target.files?.[0]
+    if (!file || !selectedDocId) return
+
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      const base64 = event.target?.result
+      if (typeof base64 === 'string') {
+        const markdown = selectedDoc.content || ''
+        const altText = file.name.replace(/\.[^/.]+$/, '')
+        const imageMarkdown = `\n![${altText}](${base64})\n`
+        useAppStore.getState().updateDoc(selectedDocId, { content: markdown + imageMarkdown })
+      }
+    }
+    reader.readAsDataURL(file)
+    // Reset input so same file can be selected again
+    if (imageInputRef.current) imageInputRef.current.value = ''
+  }
 
   const renderDocTree = (parentId = null, depth = 0) => {
     const children = Object.values(docs).filter((d) => d.parentId === parentId)
@@ -165,10 +187,26 @@ export default function WikiPage() {
             <div className="wiki-header">
               <h1>{selectedDoc.title}</h1>
               <div className="wiki-actions">
+                {isEditing && (
+                  <button
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => imageInputRef.current?.click()}
+                    title="Insert image"
+                  >
+                    <ImageIcon size={14} /> Image
+                  </button>
+                )}
                 <button className="btn btn-secondary btn-sm" onClick={() => setIsEditing(!isEditing)}>
                   <Edit2 size={14} /> {isEditing ? 'Preview' : 'Edit'}
                 </button>
               </div>
+              <input
+                ref={imageInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                style={{ display: 'none' }}
+              />
             </div>
 
             <div className="wiki-body">
