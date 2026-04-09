@@ -207,6 +207,27 @@
   color: var(--color-text) !important;
 }
 
+/* MDEditor markdown preview content */
+.wiki-md-editor .markdown {
+  color: var(--color-text) !important;
+}
+
+.wiki-md-editor .markdown p,
+.wiki-md-editor .markdown li,
+.wiki-md-editor .markdown span,
+.wiki-md-editor .markdown div {
+  color: var(--color-text) !important;
+}
+
+.wiki-md-editor .markdown h1,
+.wiki-md-editor .markdown h2,
+.wiki-md-editor .markdown h3,
+.wiki-md-editor .markdown h4,
+.wiki-md-editor .markdown h5,
+.wiki-md-editor .markdown h6 {
+  color: var(--color-text) !important;
+}
+
 .wiki-md-editor textarea,
 .wiki-md-editor input {
   background-color: var(--color-surface) !important;
@@ -221,6 +242,41 @@
   color: var(--color-text-muted) !important;
   opacity: 1 !important;
 }
+
+/* Additional markdown preview styling for visibility */
+.wiki-md-editor .markdown-body {
+  color: var(--color-text) !important;
+  background-color: transparent;
+}
+
+.wiki-md-editor .markdown-body p,
+.wiki-md-editor .markdown-body li,
+.wiki-md-editor .markdown-body dd,
+.wiki-md-editor .markdown-body dt {
+  color: var(--color-text) !important;
+}
+
+.wiki-md-editor [class*="markdown"] {
+  color: var(--color-text) !important;
+}
+
+/* Ensure all text is visible in preview mode */
+.wiki-md-editor .md-editor-preview * {
+  color: var(--color-text) !important;
+}
+
+/* Reset specific element colors that might override */
+.wiki-md-editor .md-editor-preview p { color: var(--color-text) !important; }
+.wiki-md-editor .md-editor-preview h1 { color: var(--color-text) !important; }
+.wiki-md-editor .md-editor-preview h2 { color: var(--color-text) !important; }
+.wiki-md-editor .md-editor-preview h3 { color: var(--color-text) !important; }
+.wiki-md-editor .md-editor-preview h4 { color: var(--color-text) !important; }
+.wiki-md-editor .md-editor-preview h5 { color: var(--color-text) !important; }
+.wiki-md-editor .md-editor-preview h6 { color: var(--color-text) !important; }
+.wiki-md-editor .md-editor-preview li { color: var(--color-text) !important; }
+.wiki-md-editor .md-editor-preview blockquote { color: var(--color-text-muted) !important; }
+.wiki-md-editor .md-editor-preview code { color: var(--color-secondary) !important; }
+.wiki-md-editor .md-editor-preview a { color: var(--color-primary) !important; }
 
 .wiki-md-editor .md-editor-toolbar {
   background-color: var(--color-sidebar) !important;

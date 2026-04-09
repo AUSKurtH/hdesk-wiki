@@ -231,12 +231,8 @@ export default function WikiPage() {
                   hideToolbar={!isEditing}
                   visibleDragbar={false}
                   height={isEditing ? 600 : 'auto'}
-                  className="wiki-md-editor"
-                  textareaProps={{
-                    placeholder: 'Write your documentation here...',
-                  }}
-                  visibleDragbar={false}
                   enableScroll={true}
+                  className="wiki-md-editor"
                   textareaProps={{
                     disabled: !isEditing,
                     placeholder: 'Write your documentation here...',
