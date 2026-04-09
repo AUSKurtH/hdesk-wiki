@@ -207,6 +207,27 @@
   color: var(--color-text) !important;
 }
 
+/* MDEditor markdown preview content */
+.wiki-md-editor .markdown {
+  color: var(--color-text) !important;
+}
+
+.wiki-md-editor .markdown p,
+.wiki-md-editor .markdown li,
+.wiki-md-editor .markdown span,
+.wiki-md-editor .markdown div {
+  color: var(--color-text) !important;
+}
+
+.wiki-md-editor .markdown h1,
+.wiki-md-editor .markdown h2,
+.wiki-md-editor .markdown h3,
+.wiki-md-editor .markdown h4,
+.wiki-md-editor .markdown h5,
+.wiki-md-editor .markdown h6 {
+  color: var(--color-text) !important;
+}
+
 .wiki-md-editor textarea,
 .wiki-md-editor input {
   background-color: var(--color-surface) !important;
@@ -220,6 +241,23 @@
 .wiki-md-editor textarea::placeholder {
   color: var(--color-text-muted) !important;
   opacity: 1 !important;
+}
+
+/* Additional markdown preview styling for visibility */
+.wiki-md-editor .markdown-body {
+  color: var(--color-text) !important;
+  background-color: transparent;
+}
+
+.wiki-md-editor .markdown-body p,
+.wiki-md-editor .markdown-body li,
+.wiki-md-editor .markdown-body dd,
+.wiki-md-editor .markdown-body dt {
+  color: var(--color-text) !important;
+}
+
+.wiki-md-editor [class*="markdown"] {
+  color: var(--color-text) !important;
 }
 
 .wiki-md-editor .md-editor-toolbar {
