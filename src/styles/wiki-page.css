@@ -260,6 +260,24 @@
   color: var(--color-text) !important;
 }
 
+/* Ensure all text is visible in preview mode */
+.wiki-md-editor .md-editor-preview * {
+  color: var(--color-text) !important;
+}
+
+/* Reset specific element colors that might override */
+.wiki-md-editor .md-editor-preview p { color: var(--color-text) !important; }
+.wiki-md-editor .md-editor-preview h1 { color: var(--color-text) !important; }
+.wiki-md-editor .md-editor-preview h2 { color: var(--color-text) !important; }
+.wiki-md-editor .md-editor-preview h3 { color: var(--color-text) !important; }
+.wiki-md-editor .md-editor-preview h4 { color: var(--color-text) !important; }
+.wiki-md-editor .md-editor-preview h5 { color: var(--color-text) !important; }
+.wiki-md-editor .md-editor-preview h6 { color: var(--color-text) !important; }
+.wiki-md-editor .md-editor-preview li { color: var(--color-text) !important; }
+.wiki-md-editor .md-editor-preview blockquote { color: var(--color-text-muted) !important; }
+.wiki-md-editor .md-editor-preview code { color: var(--color-secondary) !important; }
+.wiki-md-editor .md-editor-preview a { color: var(--color-primary) !important; }
+
 .wiki-md-editor .md-editor-toolbar {
   background-color: var(--color-sidebar) !important;
   border-bottom: 1px solid var(--color-border) !important;
